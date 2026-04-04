@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpcs:
+    name: PHPCS (WPCS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install composer deps
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run PHPCS
+        run: composer lint
+
+  phpunit:
+    name: PHPUnit (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.1', '8.2']
+        wp: ['latest']
+        include:
+          - php: '8.1'
+            wp: '6.3'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Install composer deps
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Configure wp-env for matrix
+        if: matrix.wp != 'latest'
+        run: |
+          echo '{"core":"WordPress/WordPress#${{ matrix.wp }}","phpVersion":"${{ matrix.php }}"}' > .wp-env.override.json
+
+      - name: Configure wp-env PHP version (latest core)
+        if: matrix.wp == 'latest'
+        run: |
+          echo '{"phpVersion":"${{ matrix.php }}"}' > .wp-env.override.json
+
+      - name: Start wp-env
+        run: npm run env:start
+
+      - name: Run PHPUnit
+        run: npm test
+
+      - name: Stop wp-env
+        if: always()
+        run: npm run env:stop
