@@ -16,6 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -26,6 +32,12 @@ jobs:
       - name: Resolve version
         id: version
         run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Build UI bundle
+        run: npm run build
 
       - name: Install composer deps (no-dev)
         run: composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
