@@ -137,17 +137,17 @@ final class Scorer {
 	 * @return array{type:string,slug:string}
 	 */
 	public static function infer_owner( string $option_name, ?array $tracking, array $context ): array {
-		if (
-			null !== $tracking
-			&& ! empty( $tracking['last_reader'] )
-			&& self::OWNER_TYPE_UNKNOWN !== ( $tracking['reader_type'] ?? self::OWNER_TYPE_UNKNOWN )
-		) {
+		// 1. The core registry is the strongest deterministic signal: an exact match
+		// on a curated list of WordPress-shipped option names.
+		if ( CoreOptions::contains( $option_name ) ) {
 			return array(
-				'type' => (string) $tracking['reader_type'],
-				'slug' => (string) $tracking['last_reader'],
+				'type' => self::OWNER_TYPE_CORE,
+				'slug' => 'wordpress',
 			);
 		}
 
+		// 2. Prefix matches against installed plugin/theme slugs. Prefer plugin
+		// over theme when a slug happens to exist in both.
 		foreach ( ( $context['installed_plugin_slugs'] ?? array() ) as $slug ) {
 			if ( '' !== $slug && self::name_starts_with_slug( $option_name, $slug ) ) {
 				return array(
@@ -166,10 +166,23 @@ final class Scorer {
 			}
 		}
 
-		if ( CoreOptions::contains( $option_name ) ) {
+		// 3. Tracking data is a weaker signal: "who read this option" is often
+		// WordPress core even for plugin-owned options (core loads alloptions,
+		// then plugins consume them via filters without appearing in the
+		// backtrace). Trust tracking only when it positively identifies a
+		// plugin or theme caller.
+		if (
+			null !== $tracking
+			&& ! empty( $tracking['last_reader'] )
+			&& in_array(
+				(string) ( $tracking['reader_type'] ?? '' ),
+				array( self::OWNER_TYPE_PLUGIN, self::OWNER_TYPE_THEME ),
+				true
+			)
+		) {
 			return array(
-				'type' => self::OWNER_TYPE_CORE,
-				'slug' => 'wordpress',
+				'type' => (string) $tracking['reader_type'],
+				'slug' => (string) $tracking['last_reader'],
 			);
 		}
 

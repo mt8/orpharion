@@ -52,7 +52,7 @@ final class Rest_Controller {
 						'orderby'    => array(
 							'type'    => 'string',
 							'default' => 'score',
-							'enum'    => array( 'score', 'name', 'size', 'last_read' ),
+							'enum'    => array( 'score', 'name', 'size', 'last_read', 'owner', 'autoload' ),
 						),
 						'order'      => array(
 							'type'    => 'string',
@@ -254,6 +254,8 @@ final class Rest_Controller {
 
 		$where  = array();
 		$params = array();
+		// Transients are managed by the Transient API and are out of scope for Optrion.
+		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';
@@ -593,6 +595,12 @@ final class Rest_Controller {
 						return $sign * strcmp( (string) $a['option_name'], (string) $b['option_name'] );
 					case 'size':
 						return $sign * ( $a['size'] <=> $b['size'] );
+					case 'autoload':
+						return $sign * strcmp( (string) $a['autoload'], (string) $b['autoload'] );
+					case 'owner':
+						$oa = (string) ( $a['owner']['type'] ?? '' ) . '/' . (string) ( $a['owner']['slug'] ?? '' );
+						$ob = (string) ( $b['owner']['type'] ?? '' ) . '/' . (string) ( $b['owner']['slug'] ?? '' );
+						return $sign * strcmp( $oa, $ob );
 					case 'last_read':
 						$la = (string) ( $a['tracking']['last_read_at'] ?? '' );
 						$lb = (string) ( $b['tracking']['last_read_at'] ?? '' );
@@ -634,7 +642,11 @@ final class Rest_Controller {
 	private static function collect_names_by_score_min( int $score_min ): array {
 		global $wpdb;
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( "SELECT option_name, option_value, autoload FROM {$wpdb->options}", ARRAY_A );
+		$rows = $wpdb->get_results(
+			"SELECT option_name, option_value, autoload FROM {$wpdb->options}"
+			. " WHERE option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'",
+			ARRAY_A
+		);
 		// phpcs:enable
 		$tracking = self::tracking_map();
 		$context  = Scorer::build_context();

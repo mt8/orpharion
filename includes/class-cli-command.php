@@ -367,6 +367,8 @@ final class CLI_Command {
 		global $wpdb;
 		$where  = array();
 		$params = array();
+		// Transients are managed by the Transient API and are out of scope.
+		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';
