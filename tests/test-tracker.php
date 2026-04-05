@@ -36,11 +36,17 @@ class TrackerTest extends WP_UnitTestCase {
 	 */
 	public function test_classify_trace_identifies_plugin_caller(): void {
 		$trace  = array(
-			array( 'file' => WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-cart.php' ),
+			array(
+				'file'     => WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-cart.php',
+				'function' => 'get_cart',
+				'class'    => 'WC_Cart',
+			),
 		);
 		$result = Tracker::classify_trace( $trace );
 		$this->assertSame( 'plugin', $result['type'] );
 		$this->assertSame( 'woocommerce', $result['slug'] );
+		$this->assertSame( 'woocommerce/includes/class-wc-cart.php', $result['caller_file'] );
+		$this->assertSame( 'WC_Cart::get_cart', $result['caller_func'] );
 	}
 
 	/**
@@ -48,11 +54,16 @@ class TrackerTest extends WP_UnitTestCase {
 	 */
 	public function test_classify_trace_identifies_theme_caller(): void {
 		$trace  = array(
-			array( 'file' => get_theme_root() . '/twentytwentyfour/functions.php' ),
+			array(
+				'file'     => get_theme_root() . '/twentytwentyfour/functions.php',
+				'function' => 'theme_setup',
+			),
 		);
 		$result = Tracker::classify_trace( $trace );
 		$this->assertSame( 'theme', $result['type'] );
 		$this->assertSame( 'twentytwentyfour', $result['slug'] );
+		$this->assertSame( 'twentytwentyfour/functions.php', $result['caller_file'] );
+		$this->assertSame( 'theme_setup', $result['caller_func'] );
 	}
 
 	/**
@@ -61,17 +72,21 @@ class TrackerTest extends WP_UnitTestCase {
 	public function test_classify_trace_skips_optrion_frames(): void {
 		$trace  = array(
 			array( 'file' => OPTRION_DIR . 'includes/class-tracker.php' ),
-			array( 'file' => WP_PLUGIN_DIR . '/jetpack/jetpack.php' ),
+			array(
+				'file'     => WP_PLUGIN_DIR . '/jetpack/jetpack.php',
+				'function' => 'init',
+				'class'    => 'Jetpack',
+			),
 		);
 		$result = Tracker::classify_trace( $trace );
 		$this->assertSame( 'plugin', $result['type'] );
 		$this->assertSame( 'jetpack', $result['slug'] );
+		$this->assertSame( 'jetpack/jetpack.php', $result['caller_file'] );
+		$this->assertSame( 'Jetpack::init', $result['caller_func'] );
 	}
 
 	/**
 	 * A trace with no plugin/theme frames is attributed to 'unknown' (not 'core').
-	 * Returning 'core' here historically caused almost every option to be
-	 * mis-attributed to WordPress-Core in the admin UI.
 	 */
 	public function test_classify_trace_defaults_to_unknown(): void {
 		$trace  = array(
@@ -80,6 +95,8 @@ class TrackerTest extends WP_UnitTestCase {
 		$result = Tracker::classify_trace( $trace );
 		$this->assertSame( 'unknown', $result['type'] );
 		$this->assertSame( '', $result['slug'] );
+		$this->assertSame( '', $result['caller_file'] );
+		$this->assertSame( '', $result['caller_func'] );
 	}
 
 	/**

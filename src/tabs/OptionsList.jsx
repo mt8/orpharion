@@ -316,6 +316,25 @@ const OptionsList = () => {
 										item.tracking &&
 											item.tracking.last_read_at
 									) }
+									{ item.tracking &&
+										item.tracking.last_caller_file && (
+										<span
+											className="optrion-caller-info"
+											title={
+												( item.tracking
+													.last_caller_func ||
+													'' ) +
+												' @ ' +
+												item.tracking
+													.last_caller_file
+											}
+										>
+											{ item.tracking
+												.last_caller_func ||
+												item.tracking
+													.last_caller_file }
+										</span>
+									) }
 								</td>
 								<td
 									className={ labelClass( item.score.label ) }

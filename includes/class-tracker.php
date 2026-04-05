@@ -178,23 +178,27 @@ final class Tracker {
 	/**
 	 * Records a single read into the in-memory buffer.
 	 *
-	 * @param string                         $name   Option name.
-	 * @param array{type:string,slug:string} $reader Reader classification.
-	 * @param string                         $now    MySQL-formatted UTC timestamp.
+	 * @param string                                                               $name   Option name.
+	 * @param array{type:string,slug:string,caller_file:string,caller_func:string} $reader Reader classification.
+	 * @param string                                                               $now    MySQL-formatted UTC timestamp.
 	 */
 	public static function buffer_record( string $name, array $reader, string $now ): void {
 		if ( ! isset( self::$buffer[ $name ] ) ) {
 			self::$buffer[ $name ] = array(
-				'count'  => 0,
-				'last'   => $now,
-				'reader' => $reader['slug'],
-				'type'   => $reader['type'],
+				'count'       => 0,
+				'last'        => $now,
+				'reader'      => $reader['slug'],
+				'type'        => $reader['type'],
+				'caller_file' => $reader['caller_file'] ?? '',
+				'caller_func' => $reader['caller_func'] ?? '',
 			);
 		}
 		++self::$buffer[ $name ]['count'];
-		self::$buffer[ $name ]['last']   = $now;
-		self::$buffer[ $name ]['reader'] = $reader['slug'];
-		self::$buffer[ $name ]['type']   = $reader['type'];
+		self::$buffer[ $name ]['last']        = $now;
+		self::$buffer[ $name ]['reader']      = $reader['slug'];
+		self::$buffer[ $name ]['type']        = $reader['type'];
+		self::$buffer[ $name ]['caller_file'] = $reader['caller_file'] ?? '';
+		self::$buffer[ $name ]['caller_func'] = $reader['caller_func'] ?? '';
 	}
 
 	/**
@@ -210,23 +214,27 @@ final class Tracker {
 		$placeholders = array();
 		$values       = array();
 		foreach ( self::$buffer as $name => $entry ) {
-			$placeholders[] = '(%s, %s, %d, %s, %s, %s)';
+			$placeholders[] = '(%s, %s, %d, %s, %s, %s, %s, %s)';
 			$values[]       = $name;
 			$values[]       = $entry['last'];
 			$values[]       = $entry['count'];
 			$values[]       = $entry['reader'];
 			$values[]       = $entry['type'];
 			$values[]       = $entry['last'];
+			$values[]       = $entry['caller_file'];
+			$values[]       = $entry['caller_func'];
 		}
 
 		$sql = "INSERT INTO {$table}"
-			. ' (option_name, last_read_at, read_count, last_reader, reader_type, first_seen) VALUES '
+			. ' (option_name, last_read_at, read_count, last_reader, reader_type, first_seen, last_caller_file, last_caller_func) VALUES '
 			. implode( ',', $placeholders )
 			. ' ON DUPLICATE KEY UPDATE'
 			. ' last_read_at = VALUES(last_read_at),'
 			. ' read_count = read_count + VALUES(read_count),'
 			. ' last_reader = VALUES(last_reader),'
-			. ' reader_type = VALUES(reader_type)';
+			. ' reader_type = VALUES(reader_type),'
+			. ' last_caller_file = VALUES(last_caller_file),'
+			. ' last_caller_func = VALUES(last_caller_func)';
 
 		$wpdb->query( $wpdb->prepare( $sql, $values ) ); // phpcs:ignore WordPress.DB
 
@@ -245,7 +253,7 @@ final class Tracker {
 	/**
 	 * Inspects the current PHP backtrace to attribute the caller.
 	 *
-	 * @return array{type:string,slug:string}
+	 * @return array{type:string,slug:string,caller_file:string,caller_func:string}
 	 */
 	public static function identify_caller(): array {
 		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 15 ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
@@ -253,20 +261,24 @@ final class Tracker {
 	}
 
 	/**
-	 * Classifies a backtrace into {type, slug} based on file paths.
+	 * Classifies a backtrace into {type, slug, caller_file, caller_func}.
+	 *
+	 * `caller_file` is the path relative to the plugin / theme / WordPress root.
+	 * `caller_func` is `Class::method` for method calls or the bare function name.
 	 *
 	 * Pure function exposed for unit tests.
 	 *
-	 * @param array<int,array{file?:string}> $trace debug_backtrace() output.
-	 * @return array{type:string,slug:string}
+	 * @param array<int,array{file?:string,function?:string,class?:string}> $trace debug_backtrace() output.
+	 * @return array{type:string,slug:string,caller_file:string,caller_func:string}
 	 */
 	public static function classify_trace( array $trace ): array {
 		$plugins = self::normalize( defined( 'WP_PLUGIN_DIR' ) ? WP_PLUGIN_DIR : '' );
 		$mu      = self::normalize( defined( 'WPMU_PLUGIN_DIR' ) ? WPMU_PLUGIN_DIR : '' );
 		$themes  = self::normalize( function_exists( 'get_theme_root' ) ? get_theme_root() : '' );
 		$self    = self::normalize( defined( 'OPTRION_DIR' ) ? OPTRION_DIR : '' );
+		$abspath = self::normalize( defined( 'ABSPATH' ) ? ABSPATH : '' );
 
-		foreach ( $trace as $frame ) {
+		foreach ( $trace as $i => $frame ) {
 			if ( empty( $frame['file'] ) ) {
 				continue;
 			}
@@ -275,34 +287,66 @@ final class Tracker {
 			if ( '' !== $self && self::starts_with( $file, $self ) ) {
 				continue;
 			}
+
+			$type    = '';
+			$slug    = '';
+			$rel     = '';
+			$basedir = '';
+
 			if ( '' !== $plugins && self::starts_with( $file, $plugins ) ) {
-				return array(
-					'type' => 'plugin',
-					'slug' => self::extract_slug( $file, $plugins ),
-				);
+				$type    = 'plugin';
+				$slug    = self::extract_slug( $file, $plugins );
+				$basedir = $plugins;
+			} elseif ( '' !== $mu && self::starts_with( $file, $mu ) ) {
+				$type    = 'plugin';
+				$slug    = 'mu:' . self::extract_slug( $file, $mu );
+				$basedir = $mu;
+			} elseif ( '' !== $themes && self::starts_with( $file, $themes ) ) {
+				$type    = 'theme';
+				$slug    = self::extract_slug( $file, $themes );
+				$basedir = $themes;
 			}
-			if ( '' !== $mu && self::starts_with( $file, $mu ) ) {
-				return array(
-					'type' => 'plugin',
-					'slug' => 'mu:' . self::extract_slug( $file, $mu ),
-				);
+
+			if ( '' === $type ) {
+				continue;
 			}
-			if ( '' !== $themes && self::starts_with( $file, $themes ) ) {
-				return array(
-					'type' => 'theme',
-					'slug' => self::extract_slug( $file, $themes ),
-				);
-			}
+
+			$rel  = ltrim( substr( $file, strlen( $basedir ) ), '/' );
+			$func = self::frame_function( $frame );
+
+			return array(
+				'type'        => $type,
+				'slug'        => $slug,
+				'caller_file' => $rel,
+				'caller_func' => $func,
+			);
 		}
 
-		// No plugin / theme / core-plugin frame in the trace: we cannot say who
-		// actually owns this read. Returning 'unknown' keeps downstream owner
-		// inference honest — attributing to core here caused nearly every
-		// autoloaded option to be mis-labeled as WordPress-Core.
 		return array(
-			'type' => 'unknown',
-			'slug' => '',
+			'type'        => 'unknown',
+			'slug'        => '',
+			'caller_file' => '',
+			'caller_func' => '',
 		);
+	}
+
+	/**
+	 * Builds a human-readable function identifier from a backtrace frame.
+	 *
+	 * Returns `Class::method` for method calls and the bare function name
+	 * for plain functions. Returns an empty string if no function info exists.
+	 *
+	 * @param array{function?:string,class?:string} $frame Single backtrace frame.
+	 */
+	private static function frame_function( array $frame ): string {
+		if ( empty( $frame['function'] ) ) {
+			return '';
+		}
+		$func = (string) $frame['function'];
+		if ( ! empty( $frame['class'] ) ) {
+			$func = (string) $frame['class'] . '::' . $func;
+		}
+		return $func;
 	}
 
 	/**

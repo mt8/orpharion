@@ -81,6 +81,17 @@
 		font-size: 11px;
 	}
 
+	.optrion-caller-info {
+		display: block;
+		color: #646970;
+		font-size: 11px;
+		max-width: 220px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		cursor: help;
+	}
+
 	.optrion-badge {
 		display: inline-block;
 		margin-left: 6px;

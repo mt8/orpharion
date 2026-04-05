@@ -23,7 +23,7 @@ final class Schema {
 	 *
 	 * Bump this whenever a table definition changes.
 	 */
-	public const DB_VERSION = '1.0.0';
+	public const DB_VERSION = '1.1.0';
 
 	/**
 	 * Option key that stores the installed DB version.
@@ -67,6 +67,8 @@ final class Schema {
 			last_reader varchar(255) NOT NULL DEFAULT '',
 			reader_type varchar(20) NOT NULL DEFAULT 'unknown',
 			first_seen datetime NOT NULL,
+			last_caller_file varchar(500) NOT NULL DEFAULT '',
+			last_caller_func varchar(255) NOT NULL DEFAULT '',
 			PRIMARY KEY  (option_name),
 			KEY last_read_at (last_read_at),
 			KEY reader_type (reader_type),
