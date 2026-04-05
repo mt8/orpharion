@@ -3,6 +3,9 @@
 .gitignore
 .gitattributes
 .husky
+.claude
+.idea
+.vscode
 .wp-env.json
 .wp-env.override.json
 .distignore
