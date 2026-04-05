@@ -25,6 +25,28 @@ const labelClass = ( label ) => {
 	}
 };
 
+const formatLastRead = ( iso ) => {
+	if ( ! iso ) {
+		return '—';
+	}
+	// Backend returns MySQL UTC `Y-m-d H:i:s`; render in site locale.
+	const normalized = String( iso ).replace( ' ', 'T' ) + 'Z';
+	const d = new Date( normalized );
+	if ( Number.isNaN( d.getTime() ) ) {
+		return String( iso );
+	}
+	return d.toLocaleString();
+};
+
+const SORTABLE_COLUMNS = [
+	{ key: 'name', label: __( 'option_name', 'optrion' ) },
+	{ key: 'owner', label: __( 'Owner', 'optrion' ) },
+	{ key: 'autoload', label: __( 'Autoload', 'optrion' ) },
+	{ key: 'size', label: __( 'Size', 'optrion' ) },
+	{ key: 'last_read', label: __( 'Last accessed', 'optrion' ) },
+	{ key: 'score', label: __( 'Score', 'optrion' ) },
+];
+
 const OptionsList = () => {
 	const [ items, setItems ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
@@ -35,20 +57,21 @@ const OptionsList = () => {
 	const [ search, setSearch ] = useState( '' );
 	const [ scoreMin, setScoreMin ] = useState( '' );
 	const [ ownerType, setOwnerType ] = useState( '' );
+	const [ orderby, setOrderby ] = useState( 'score' );
+	const [ order, setOrder ] = useState( 'desc' );
 
 	const load = useCallback( () => {
 		setLoading( true );
 		setError( null );
-		api
-			.listOptions( {
-				page,
-				per_page: PER_PAGE,
-				search,
-				score_min: scoreMin,
-				owner_type: ownerType,
-				orderby: 'score',
-				order: 'desc',
-			} )
+		api.listOptions( {
+			page,
+			per_page: PER_PAGE,
+			search,
+			score_min: scoreMin,
+			owner_type: ownerType,
+			orderby,
+			order,
+		} )
 			.then( ( data ) => {
 				setItems( data.items || [] );
 				setTotal( data.total || 0 );
@@ -56,7 +79,7 @@ const OptionsList = () => {
 			} )
 			.catch( ( e ) => setError( e.message || String( e ) ) )
 			.finally( () => setLoading( false ) );
-	}, [ page, search, scoreMin, ownerType ] );
+	}, [ page, search, scoreMin, ownerType, orderby, order ] );
 
 	useEffect( () => {
 		load();
@@ -78,7 +101,13 @@ const OptionsList = () => {
 		if ( ! selected.size ) return;
 		if (
 			! window.confirm(
-				sprintf( __( 'Delete %d option(s)? (automatic backup will be made)', 'optrion' ), selected.size )
+				sprintf(
+					__(
+						'Delete %d option(s)? (automatic backup will be made)',
+						'optrion'
+					),
+					selected.size
+				)
 			)
 		) {
 			return;
@@ -89,6 +118,27 @@ const OptionsList = () => {
 	const bulkQuarantine = () => {
 		if ( ! selected.size ) return;
 		api.createQuarantine( Array.from( selected ), 0 ).then( load );
+	};
+
+	const changeSort = ( key ) => {
+		setPage( 1 );
+		if ( key === orderby ) {
+			setOrder( ( v ) => ( v === 'asc' ? 'desc' : 'asc' ) );
+		} else {
+			setOrderby( key );
+			setOrder(
+				key === 'name' || key === 'owner' || key === 'autoload'
+					? 'asc'
+					: 'desc'
+			);
+		}
+	};
+
+	const sortIndicator = ( key ) => {
+		if ( key !== orderby ) {
+			return '';
+		}
+		return order === 'asc' ? ' ▲' : ' ▼';
 	};
 
 	return (
@@ -128,14 +178,27 @@ const OptionsList = () => {
 				/>
 			</div>
 			<div className="optrion-bulk">
-				<Button variant="primary" onClick={ bulkQuarantine } disabled={ ! selected.size }>
+				<Button
+					variant="primary"
+					onClick={ bulkQuarantine }
+					disabled={ ! selected.size }
+				>
 					{ __( 'Quarantine selected', 'optrion' ) }
 				</Button>
-				<Button variant="secondary" isDestructive onClick={ bulkDelete } disabled={ ! selected.size }>
+				<Button
+					variant="secondary"
+					isDestructive
+					onClick={ bulkDelete }
+					disabled={ ! selected.size }
+				>
 					{ __( 'Delete selected', 'optrion' ) }
 				</Button>
 				<span className="optrion-bulk__hint">
-					{ sprintf( __( '%1$d selected · %2$d matches', 'optrion' ), selected.size, total ) }
+					{ sprintf(
+						__( '%1$d selected · %2$d matches', 'optrion' ),
+						selected.size,
+						total
+					) }
 				</span>
 			</div>
 			{ error && <p className="optrion-error">{ error }</p> }
@@ -146,11 +209,23 @@ const OptionsList = () => {
 					<thead>
 						<tr>
 							<th style={ { width: 32 } }></th>
-							<th>{ __( 'option_name', 'optrion' ) }</th>
-							<th>{ __( 'Owner', 'optrion' ) }</th>
-							<th>{ __( 'Autoload', 'optrion' ) }</th>
-							<th>{ __( 'Size', 'optrion' ) }</th>
-							<th>{ __( 'Score', 'optrion' ) }</th>
+							{ SORTABLE_COLUMNS.map( ( col ) => (
+								<th key={ col.key }>
+									<button
+										type="button"
+										className="optrion-sort-button"
+										onClick={ () => changeSort( col.key ) }
+										aria-label={ sprintf(
+											/* translators: %s: column heading label (e.g. "Size", "Score"). */
+											__( 'Sort by %s', 'optrion' ),
+											col.label
+										) }
+									>
+										{ col.label }
+										{ sortIndicator( col.key ) }
+									</button>
+								</th>
+							) ) }
 						</tr>
 					</thead>
 					<tbody>
@@ -158,8 +233,12 @@ const OptionsList = () => {
 							<tr key={ item.option_name }>
 								<td>
 									<CheckboxControl
-										checked={ selected.has( item.option_name ) }
-										onChange={ () => toggle( item.option_name ) }
+										checked={ selected.has(
+											item.option_name
+										) }
+										onChange={ () =>
+											toggle( item.option_name )
+										}
 									/>
 								</td>
 								<td>
@@ -167,11 +246,24 @@ const OptionsList = () => {
 								</td>
 								<td>
 									{ item.owner.slug || '—' }
-									<span className="optrion-owner-type"> ({ item.owner.type })</span>
+									<span className="optrion-owner-type">
+										{ ' ' }
+										({ item.owner.type })
+									</span>
 								</td>
 								<td>{ item.autoload }</td>
 								<td>{ item.size_human }</td>
-								<td className={ labelClass( item.score.label ) }>{ item.score.total }</td>
+								<td>
+									{ formatLastRead(
+										item.tracking &&
+											item.tracking.last_read_at
+									) }
+								</td>
+								<td
+									className={ labelClass( item.score.label ) }
+								>
+									{ item.score.total }
+								</td>
 							</tr>
 						) ) }
 					</tbody>

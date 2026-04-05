@@ -83,6 +83,25 @@ class RestControllerTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * GET /options filters out Transient API rows (_transient_* / _site_transient_*).
+	 */
+	public function test_list_options_excludes_transients(): void {
+		wp_set_current_user( $this->admin_id );
+		set_transient( 'optrion_rest_test_transient', 'x', 300 );
+		set_site_transient( 'optrion_rest_test_site_transient', 'x', 300 );
+		$req = new WP_REST_Request( 'GET', '/' . Rest_Controller::NAMESPACE_V1 . '/options' );
+		$req->set_param( 'per_page', 200 );
+		$req->set_param( 'search', 'optrion_rest_test' );
+		$response = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $response->get_status() );
+		$names = array_column( $response->get_data()['items'], 'option_name' );
+		foreach ( $names as $name ) {
+			$this->assertStringStartsNotWith( '_transient_', (string) $name );
+			$this->assertStringStartsNotWith( '_site_transient_', (string) $name );
+		}
+	}
+
+	/**
 	 * GET /options/{name} returns 404 for unknown names.
 	 */
 	public function test_option_detail_404(): void {

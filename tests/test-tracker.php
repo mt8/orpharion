@@ -69,14 +69,17 @@ class TrackerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A trace with no recognized frames is attributed to core.
+	 * A trace with no plugin/theme frames is attributed to 'unknown' (not 'core').
+	 * Returning 'core' here historically caused almost every option to be
+	 * mis-attributed to WordPress-Core in the admin UI.
 	 */
-	public function test_classify_trace_defaults_to_core(): void {
+	public function test_classify_trace_defaults_to_unknown(): void {
 		$trace  = array(
 			array( 'file' => ABSPATH . 'wp-includes/option.php' ),
 		);
 		$result = Tracker::classify_trace( $trace );
-		$this->assertSame( 'core', $result['type'] );
+		$this->assertSame( 'unknown', $result['type'] );
+		$this->assertSame( '', $result['slug'] );
 	}
 
 	/**

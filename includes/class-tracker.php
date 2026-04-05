@@ -295,9 +295,13 @@ final class Tracker {
 			}
 		}
 
+		// No plugin / theme / core-plugin frame in the trace: we cannot say who
+		// actually owns this read. Returning 'unknown' keeps downstream owner
+		// inference honest — attributing to core here caused nearly every
+		// autoloaded option to be mis-labeled as WordPress-Core.
 		return array(
-			'type' => 'core',
-			'slug' => 'wordpress',
+			'type' => 'unknown',
+			'slug' => '',
 		);
 	}
 

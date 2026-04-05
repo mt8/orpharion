@@ -254,9 +254,13 @@ class ScorerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Owner inference prioritizes tracker data over prefix matching.
+	 * Owner inference prefers a plugin-slug prefix match over tracker data,
+	 * because "who read it last" is a noisier signal than the option name
+	 * itself. For options whose name does not match any installed plugin,
+	 * tracker data with a concrete plugin caller is still used — see
+	 * {@see self::test_owner_inference_falls_back_to_tracker_caller()}.
 	 */
-	public function test_owner_inference_prefers_tracker(): void {
+	public function test_owner_inference_prefers_prefix_over_tracker(): void {
 		$option   = array(
 			'option_name' => 'woocommerce_settings',
 			'size_bytes'  => 10,
@@ -269,7 +273,50 @@ class ScorerTest extends WP_UnitTestCase {
 			'reader_type'  => 'plugin',
 		);
 		$result   = Scorer::score( $option, $tracking, $this->context, $this->now );
-		$this->assertSame( 'custom-mu', $result['owner']['slug'] );
+		$this->assertSame( Scorer::OWNER_TYPE_PLUGIN, $result['owner']['type'] );
+		$this->assertSame( 'woocommerce', $result['owner']['slug'] );
+	}
+
+	/**
+	 * When no prefix / registry rule matches, a concrete plugin/theme caller
+	 * in the tracker record is used to attribute ownership.
+	 */
+	public function test_owner_inference_falls_back_to_tracker_caller(): void {
+		$option   = array(
+			'option_name' => 'opaque_blob_42',
+			'size_bytes'  => 10,
+			'autoload'    => 'no',
+		);
+		$tracking = array(
+			'last_read_at' => '2026-05-01 00:00:00',
+			'read_count'   => 3,
+			'last_reader'  => 'my-analytics',
+			'reader_type'  => 'plugin',
+		);
+		$result   = Scorer::score( $option, $tracking, $this->context, $this->now );
+		$this->assertSame( Scorer::OWNER_TYPE_PLUGIN, $result['owner']['type'] );
+		$this->assertSame( 'my-analytics', $result['owner']['slug'] );
+	}
+
+	/**
+	 * Tracker records with reader_type=core provide no information about
+	 * ownership (WordPress core reads every autoloaded option). Such rows
+	 * must not promote an option to owner=core.
+	 */
+	public function test_owner_inference_ignores_core_tracker_type(): void {
+		$option   = array(
+			'option_name' => 'opaque_blob_42',
+			'size_bytes'  => 10,
+			'autoload'    => 'yes',
+		);
+		$tracking = array(
+			'last_read_at' => '2026-05-01 00:00:00',
+			'read_count'   => 50,
+			'last_reader'  => 'wordpress',
+			'reader_type'  => 'core',
+		);
+		$result   = Scorer::score( $option, $tracking, $this->context, $this->now );
+		$this->assertSame( Scorer::OWNER_TYPE_UNKNOWN, $result['owner']['type'] );
 	}
 
 	/**
