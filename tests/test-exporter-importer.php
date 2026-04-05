@@ -177,7 +177,7 @@ class ExporterImporterTest extends WP_UnitTestCase {
 	 * Round-trip: export, delete, import restores identical values.
 	 */
 	public function test_round_trip_export_import(): void {
-		add_option( 'round_trip', serialize( array( 'a', 'b', 'c' ) ), '', 'no' ); // phpcs:ignore
+		add_option( 'round_trip', array( 'a', 'b', 'c' ), '', 'no' );
 		$json = Exporter::to_json( array( 'round_trip' ) );
 		delete_option( 'round_trip' );
 

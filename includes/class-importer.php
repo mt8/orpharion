@@ -146,6 +146,7 @@ final class Importer {
 			}
 			wp_cache_delete( $name, 'options' );
 			wp_cache_delete( 'alloptions', 'options' );
+			wp_cache_delete( 'notoptions', 'options' );
 			++$summary['overwritten'];
 		}
 
