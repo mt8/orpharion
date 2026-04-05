@@ -5,16 +5,16 @@
 import apiFetch from '@wordpress/api-fetch';
 
 const config = window.optrionConfig || {};
+const NAMESPACE = ( config.restNamespace || 'optrion/v1' ).replace( /^\/|\/$/g, '' );
 
 if ( config.nonce ) {
 	apiFetch.use( apiFetch.createNonceMiddleware( config.nonce ) );
 }
-if ( config.restRoot ) {
-	apiFetch.use( apiFetch.createRootURLMiddleware( config.restRoot ) );
-}
 
-const request = ( path, options = {} ) =>
-	apiFetch( { path: path.replace( /^\//, '' ), ...options } );
+const request = ( path, options = {} ) => {
+	const clean = path.replace( /^\//, '' );
+	return apiFetch( { path: '/' + NAMESPACE + '/' + clean, ...options } );
+};
 
 export const api = {
 	stats: () => request( 'stats' ),
