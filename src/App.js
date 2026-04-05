@@ -8,14 +8,12 @@ import { __ } from '@wordpress/i18n';
 import Dashboard from './tabs/Dashboard';
 import OptionsList from './tabs/OptionsList';
 import Quarantine from './tabs/Quarantine';
-import Export from './tabs/Export';
 import Import from './tabs/Import';
 
 const TABS = [
 	{ id: 'dashboard', label: __( 'Dashboard', 'optrion' ), component: Dashboard },
 	{ id: 'options', label: __( 'Options', 'optrion' ), component: OptionsList },
 	{ id: 'quarantine', label: __( 'Quarantine', 'optrion' ), component: Quarantine },
-	{ id: 'export', label: __( 'Export', 'optrion' ), component: Export },
 	{ id: 'import', label: __( 'Import', 'optrion' ), component: Import },
 ];
 
