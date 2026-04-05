@@ -120,6 +120,26 @@ const OptionsList = () => {
 		api.createQuarantine( Array.from( selected ), 0 ).then( load );
 	};
 
+	const bulkExport = async () => {
+		if ( ! selected.size ) return;
+		try {
+			const payload = await api.export( Array.from( selected ), 0 );
+			const blob = new Blob( [ JSON.stringify( payload, null, 2 ) ], {
+				type: 'application/json',
+			} );
+			const url = URL.createObjectURL( blob );
+			const a = document.createElement( 'a' );
+			a.href = url;
+			a.download = 'optrion-export.json';
+			document.body.appendChild( a );
+			a.click();
+			a.remove();
+			URL.revokeObjectURL( url );
+		} catch ( e ) {
+			setError( e.message || String( e ) );
+		}
+	};
+
 	const changeSort = ( key ) => {
 		setPage( 1 );
 		if ( key === orderby ) {
@@ -140,6 +160,7 @@ const OptionsList = () => {
 		}
 		return order === 'asc' ? ' ▲' : ' ▼';
 	};
+
 
 	return (
 		<div className="optrion-options-list">
@@ -184,6 +205,13 @@ const OptionsList = () => {
 					disabled={ ! selected.size }
 				>
 					{ __( 'Quarantine selected', 'optrion' ) }
+				</Button>
+				<Button
+					variant="secondary"
+					onClick={ bulkExport }
+					disabled={ ! selected.size }
+				>
+					{ __( 'Export selected', 'optrion' ) }
 				</Button>
 				<Button
 					variant="secondary"
