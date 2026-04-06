@@ -258,6 +258,8 @@ final class Rest_Controller {
 		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
 		// Quarantined options have their own tab; hide them from the main list.
 		$where[] = "option_name NOT LIKE '\\_optrion\\_q\\_\\_%'";
+		// Optrion's own internal options are not useful to audit.
+		$where[] = "option_name NOT LIKE 'optrion\\_%'";
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';
@@ -665,7 +667,8 @@ final class Rest_Controller {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results(
 			"SELECT option_name, option_value, autoload FROM {$wpdb->options}"
-			. " WHERE option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'",
+			. " WHERE option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'"
+			. " AND option_name NOT LIKE '\\_optrion\\_q\\_\\_%' AND option_name NOT LIKE 'optrion\\_%'",
 			ARRAY_A
 		);
 		// phpcs:enable
