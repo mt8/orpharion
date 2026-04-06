@@ -68,10 +68,9 @@ jobs:
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='.github' \
+            --exclude='.husky' \
             --exclude='tests' \
-            --exclude='.gitignore' \
-            --exclude='.editorconfig' \
-            --exclude='.distignore' \
+            --exclude='.*' \
             --exclude='phpcs.xml.dist' \
             --exclude='phpunit.xml.dist' \
             --exclude='composer.lock' \
