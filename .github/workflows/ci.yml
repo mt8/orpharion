@@ -37,6 +37,25 @@ jobs:
       - name: Run PHPCS
         run: composer lint
 
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install npm deps and build
+        run: npm ci && npm run build
+
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          exclude-directories: 'node_modules,.github,tests'
+
   phpunit:
     name: PHPUnit (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
