@@ -371,6 +371,8 @@ final class CLI_Command {
 		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
 		// Quarantined options are managed separately.
 		$where[] = "option_name NOT LIKE '\\_optrion\\_q\\_\\_%'";
+		// Optrion's own internal options are not useful to audit.
+		$where[] = "option_name NOT LIKE 'optrion\\_%'";
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';
