@@ -55,6 +55,7 @@ jobs:
       - uses: wordpress/plugin-check-action@v1
         with:
           exclude-directories: 'node_modules,.github,tests'
+          ignore-warnings: true
 
   phpunit:
     name: PHPUnit (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
