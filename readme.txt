@@ -3,8 +3,8 @@ Contributors: mt8biz
 Tags: options, database, cleanup, performance, autoload
 Requires at least: 5.8
 Tested up to: 6.9
-Requires PHP: 7.4
-Stable tag: 0.1.0
+Requires PHP: 8.3
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,8 +54,15 @@ Uninstalling restores any active quarantines to their original names, drops the 
 
 == Changelog ==
 
-= 0.1.0 =
-* Initial release.
+= 1.0.0 =
+* Initial public release.
+* Per-option read tracking: every `get_option()` call is attributed to the real plugin or theme on the PHP backtrace.
+* Options list with individual signal columns (accessor, autoload, size, last accessed) and inactive-only / autoload-only / accessor-type filters.
+* Quarantine workflow with manifest table, automatic expiry (restore / delete / keep), and a still-accessed guard that blocks deletion of options that are still being read.
+* Automatic JSON backup before every delete, with rolling 3-generation retention.
+* REST API under `/wp-json/optrion/v1/*` (requires `manage_options`).
+* WP-CLI commands for scripted pipelines, including `--accessor-type`, `--inactive-only`, and `--autoload-only` filters on `list`, `export`, and `clean`.
+* Full Japanese localization.
 
 == License ==
 
