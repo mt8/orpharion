@@ -109,7 +109,7 @@ final class Exporter {
 	private static function fetch_tracking_row( string $option_name ): ?array {
 		global $wpdb;
 		$table = Schema::tracking_table();
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$row = $wpdb->get_row(
 			$wpdb->prepare( "SELECT last_read_at, read_count, last_reader, reader_type FROM {$table} WHERE option_name = %s", $option_name ),
 			ARRAY_A

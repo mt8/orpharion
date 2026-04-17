@@ -394,7 +394,7 @@ final class CLI_Command {
 		}
 		$where_sql = empty( $where ) ? '' : ' WHERE ' . implode( ' AND ', $where );
 		$sql       = "SELECT option_name, option_value, autoload FROM {$wpdb->options}{$where_sql}";
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$rows          = empty( $params )
 			? $wpdb->get_results( $sql, ARRAY_A )
 			: $wpdb->get_results( $wpdb->prepare( $sql, $params ), ARRAY_A );

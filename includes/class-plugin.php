@@ -22,7 +22,9 @@ final class Plugin {
 	 * Registers hooks and loads modules.
 	 */
 	public static function boot(): void {
-		load_plugin_textdomain( 'optrion', false, dirname( plugin_basename( OPTRION_FILE ) ) . '/languages' );
+		// Translations are auto-loaded by WordPress via the Domain Path header
+		// (core just-in-time loader covers wp-content/languages/plugins/ and
+		// the plugin's own languages/ directory since WordPress 4.6).
 		Schema::maybe_upgrade();
 		Tracker::boot();
 		add_action( Quarantine::CRON_HOOK, array( Quarantine::class, 'process_expired' ) );

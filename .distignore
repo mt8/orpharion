@@ -16,6 +16,7 @@ node_modules
 src
 tests
 docs
+vendor
 
 CLAUDE.md
 README.md

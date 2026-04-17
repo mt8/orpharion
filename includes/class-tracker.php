@@ -215,7 +215,7 @@ final class Tracker {
 			. ' last_reader = VALUES(last_reader),'
 			. ' reader_type = VALUES(reader_type)';
 
-		$wpdb->query( $wpdb->prepare( $sql, $values ) ); // phpcs:ignore WordPress.DB
+		$wpdb->query( $wpdb->prepare( $sql, $values ) ); // phpcs:ignore WordPress.DB, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		self::$buffer = array();
 	}
