@@ -8,36 +8,35 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Track, score, quarantine, and clean orphaned options in your WordPress database.
+Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans with an automatic backup.
 
 == Description ==
 
 The `wp_options` table accumulates leftovers from plugins and themes that have been deactivated or deleted but never cleaned up. Those rows bloat the autoload payload on every page load and there is no built-in way to decide which ones are safe to remove.
 
-Optrion observes which options are actually read at runtime, scores each row on a 0–100 "probably unused" scale, and gives administrators a safe path to delete them:
+Optrion observes which options are actually read at runtime, attributes each read to the plugin or theme that caused it, and surfaces the raw signals (accessor, autoload flag, size, last-read timestamp) so administrators can decide what to remove:
 
-1. **Observe** — the tracker records when and by whom each option is read.
-2. **Score** — a deterministic 5-axis model (accessor state, freshness, transient prefix, autoload waste, size) classifies each option.
-3. **Quarantine** — rename the option temporarily so WordPress and the accessing plugin can no longer see it; confirm nothing breaks.
-4. **Delete** — a JSON backup is written automatically, and the row is removed from both `wp_options` and the tracking table.
+1. **Observe** — the tracker records when and by whom each option is read, using the live PHP backtrace to identify the real caller.
+2. **Quarantine** — rename the option temporarily so WordPress and the accessing plugin can no longer see it; confirm nothing breaks.
+3. **Delete** — a JSON backup is written automatically, and the row is removed from both `wp_options` and the tracking table.
 
 Core WordPress options are locked out of destructive operations.
 
 == Features ==
 
-* Per-option read tracking via the `alloptions` filter and dynamically registered `option_{$name}` filters
-* 5-axis scoring with accessor inference (live tracker data → slug prefix → core list)
-* Quarantine mode with automatic expiry (restore / delete / keep) and a manifest table
-
-* Automatic JSON backup before any deletion, with rolling 3-generation retention
-* REST API under `/wp-json/optrion/v1/*` (requires `manage_options`)
-* WP-CLI commands for scripted pipelines
+* Per-option read tracking via dynamically registered `option_{$name}` filters, so every `get_option()` call is attributed to the real plugin or theme on the call stack.
+* Accessor inference (live tracker data → slug prefix → curated core list) with an active / inactive flag so you can filter down to options whose owner is no longer present.
+* Sortable options table with individual columns for accessor, autoload, size, and last-read timestamp — no opaque composite score.
+* Quarantine mode with automatic expiry (restore / delete / keep) and a manifest table that flags options that are still being accessed.
+* Automatic JSON backup before any deletion, with rolling 3-generation retention.
+* REST API under `/wp-json/optrion/v1/*` (requires `manage_options`).
+* WP-CLI commands for scripted pipelines, including `--accessor-type` / `--inactive-only` filters on `list`, `export`, and `clean`.
 
 == Installation ==
 
 1. Upload the plugin directory or install the zip via **Plugins → Add New → Upload**.
 2. Activate the plugin.
-3. Visit **Tools → Optrion** and let the tracker run for a few days before acting on the results.
+3. Open the **Optrion** menu in the WordPress admin sidebar and let the tracker run for a few days before acting on the results.
 
 == Frequently Asked Questions ==
 
