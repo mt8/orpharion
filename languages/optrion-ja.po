@@ -181,11 +181,6 @@ msgid "Last accessed"
 msgstr "最終読み込み"
 
 #: build/index.js:1
-#: src/App.js:14
-msgid "Dashboard"
-msgstr "ダッシュボード"
-
-#: build/index.js:1
 #: src/tabs/Dashboard.jsx:25
 msgid "Total options"
 msgstr "オプション総数"
@@ -194,11 +189,6 @@ msgstr "オプション総数"
 #: src/tabs/Dashboard.jsx:26
 msgid "Autoload payload"
 msgstr "自動読み込みサイズ"
-
-#: build/index.js:1
-#: src/App.js:15
-msgid "Options"
-msgstr "オプション"
 
 #: build/index.js:1
 #: src/tabs/OptionsList.jsx:201
@@ -327,11 +317,6 @@ msgid "Next"
 msgstr "次へ"
 
 #: build/index.js:8
-#: src/App.js:16
-msgid "Quarantine"
-msgstr "検疫"
-
-#: build/index.js:8
 #: src/tabs/Quarantine.jsx:67
 msgid "Status"
 msgstr "状態"
@@ -370,10 +355,6 @@ msgstr "期限"
 #: src/tabs/Quarantine.jsx:92
 msgid "Actions"
 msgstr "操作"
-
-#: build/index.js:8
-msgid "This option was accessed after quarantine. It may still be in use."
-msgstr "このオプションは検疫後にアクセスされています。まだ使用中の可能性があります。"
 
 #: build/index.js:8
 #: src/tabs/Quarantine.jsx:31
@@ -433,11 +414,6 @@ msgstr "プレビュー — 追加: %1$d 件、上書き: %2$d 件"
 msgid "Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d"
 msgstr "インポート完了 — 追加: %1$d 件、上書き: %2$d 件、スキップ: %3$d 件"
 
-#: build/index.js:8
-#: src/index.js:22
-msgid "Optrion mount node not found."
-msgstr "Optrion のマウント先ノードが見つかりません。"
-
 #. Description of the plugin
 #: optrion.php
 msgid "Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans with an automatic backup."
@@ -466,13 +442,11 @@ msgid "Access count"
 msgstr "アクセス回数"
 
 #: build/index.js:8
-msgid "still in use"
-msgstr "使用中"
-
 #: src/tabs/Quarantine.jsx:103
 msgid "This option was accessed after quarantine. Restore it to keep the site working; auto-expiry is paused until you restore."
 msgstr "検疫後にアクセスがありました。サイト動作維持のため復元してください。復元されるまで自動期限切れは一時停止されます。"
 
+#: build/index.js:8
 #: src/tabs/Quarantine.jsx:108
 msgid "in use — restore"
 msgstr "使用中・要復元"
