@@ -44,14 +44,14 @@ jobs:
 
       - name: Stage plugin files
         run: |
-          mkdir -p build/optrion
-          rsync -a ./ build/optrion/ \
+          mkdir -p stage/optrion
+          rsync -a ./ stage/optrion/ \
             --exclude-from=.distignore \
-            --exclude='build' \
-            --exclude='.git'
+            --exclude='.git' \
+            --exclude='stage'
 
       - name: Create zip archive
-        working-directory: build
+        working-directory: stage
         run: zip -r "optrion-${{ steps.version.outputs.version }}.zip" optrion
 
       - name: Create GitHub Release
@@ -60,4 +60,4 @@ jobs:
           name: ${{ steps.version.outputs.version }}
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
-          files: build/optrion-${{ steps.version.outputs.version }}.zip
+          files: stage/optrion-${{ steps.version.outputs.version }}.zip
