@@ -1,187 +1,186 @@
-# Optrion — プラグイン設計書
+# Optrion — Plugin Design
 
-## 1. 概要
+## 1. Overview
 
-WordPress の `wp_options` テーブルには、プラグインやテーマが設定値を書き込むが、それらを停止・削除しても行が残り続ける。本プラグインは「どのオプションが、いつ、誰に読まれたか」を記録し、アクセス元・最終読み込み日時・autoload・サイズといった生シグナルを提示することで、管理者が安全にクリーンアップできる仕組みを提供する。
+WordPress' `wp_options` table accumulates rows written by plugins and themes, and those rows stay behind even after the owning plugin or theme is deactivated or deleted. Optrion records "who read which option, and when", then surfaces the raw signals — accessor, last read time, `autoload`, and size — so administrators can clean up the table safely.
 
-### 解決する課題
+### Problems it solves
 
-- 無効化・削除済みプラグイン/テーマのオプションがゴミとして残留する
-- `autoload = yes` の肥大化によるページロード時間の悪化
-- どのオプションが安全に消せるか判断する手段がない
-- 消してしまった後の復旧手段がない
+- Orphaned options left by deactivated or deleted plugins and themes.
+- Slower page loads caused by `autoload = yes` bloat.
+- No built-in way to decide which options are safe to remove.
+- No safety net once an option is deleted.
 
-### 基本方針
+### Guiding principles
 
-- **観察 → 判断 → 検疫 → 削除** の4段階で安全に運用できる設計
-- 追跡はサンプリング制御し、本番サイトのパフォーマンスを犠牲にしない
-- 削除の前に「検疫（リネームによる一時無効化）」を挟み、影響を事前確認できる
-- 削除前に必ず JSON エクスポートを挟むことで復旧可能性を担保
+- Four-stage workflow for safe operation: **observe → judge → quarantine → delete**.
+- Tracking is sampled so production sites keep their performance budget.
+- Quarantine (soft-disable via rename) sits in front of permanent deletion so the impact can be verified first.
+- Every deletion is preceded by a JSON export so the row can be restored later.
 
 ---
 
-## 2. アーキテクチャ全体図
+## 2. Architecture overview
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                    WordPress Core                    │
 │                                                     │
-│  get_option()  ──→  option_{$name} フィルタ          │
-│  alloptions    ──→  alloptions フィルタ              │
+│  get_option()  ──→  option_{$name} filter            │
+│  alloptions    ──→  alloptions filter                │
 │                        │                             │
 │                        ▼                             │
 │              ┌──────────────────┐                    │
-│              │  Tracker モジュール │                   │
-│              │  (読み込み追跡)    │                    │
+│              │  Tracker module   │                   │
+│              │  (read tracking)  │                   │
 │              └────────┬─────────┘                    │
-│                       │ shutdown 時バッチ書込          │
+│                       │ batched write on shutdown    │
 │                       ▼                              │
 │         ┌───────────────────────────┐                │
-│         │  wp_options_tracking テーブル │               │
-│         │  (カスタムテーブル)           │               │
+│         │ wp_options_tracking table │                │
+│         │ (custom table)            │                │
 │         └──────────┬────────────────┘                │
 │                    │                                 │
 │         ┌──────────▼────────────────┐                │
-│         │  Classifier モジュール      │                │
-│         │  (アクセス元推定)            │                │
+│         │  Classifier module        │                │
+│         │  (accessor inference)     │                │
 │         └──────────┬────────────────┘                │
 │                    │                                 │
 │                    ├──────────────────────┐          │
 │                    ▼                      ▼          │
 │         ┌────────────────┐   ┌─────────────────┐    │
-│         │ Cleaner (削除)  │   │ Quarantine (検疫) │   │
-│         └────────────────┘   │ リネームで一時隔離  │   │
-│                              │ 期限付き自動復元    │   │
+│         │ Cleaner (del.) │   │ Quarantine      │    │
+│         └────────────────┘   │ rename + expiry │    │
+│                              │ auto-restore    │    │
 │                              └─────────────────┘    │
 │                    │                                 │
 │         ┌──────────▼────────────────┐                │
-│         │  REST API エンドポイント    │                │
-│         │  /wp-json/optrion/v1/*       │                │
+│         │  REST API endpoints       │                │
+│         │  /wp-json/optrion/v1/*    │                │
 │         └──────────┬────────────────┘                │
 │                    │                                 │
 └────────────────────┼────────────────────────────────┘
                      │
           ┌──────────▼────────────────┐
-          │   管理画面ダッシュボード     │
-          │   (React SPA)              │
-          │   一覧 / 検疫 / 削除 /      │
-          │   エクスポート / インポート   │
+          │   Admin dashboard         │
+          │   (React SPA)             │
+          │   list / quarantine /     │
+          │   delete / export / import │
           └────────────────────────────┘
 ```
 
 ---
 
-## 3. データベース設計
+## 3. Database design
 
-### 3.1 カスタムテーブル: `{prefix}_options_tracking`
+### 3.1 Custom table: `{prefix}_options_tracking`
 
-wp_options 自体は改変せず、追跡情報を別テーブルで管理する。
+`wp_options` is never modified; tracking data lives in a separate table.
 
-| カラム | 型 | 説明 |
+| Column | Type | Description |
 |---|---|---|
-| `option_name` | VARCHAR(191) PK | wp_options の option_name と 1:1 対応 |
-| `last_read_at` | DATETIME NULL | 最後に `get_option()` で読み込まれた日時 |
-| `read_count` | BIGINT UNSIGNED | 累計読み込み回数（追跡有効期間中） |
-| `last_reader` | VARCHAR(255) | 最後に読み込んだプラグイン/テーマのスラッグ |
-| `reader_type` | ENUM('plugin','theme','core','unknown') | 読み込み元の種別 |
-| `first_seen` | DATETIME | このテーブルに初めて記録された日時 |
+| `option_name` | VARCHAR(191) PK | 1:1 with `wp_options.option_name` |
+| `last_read_at` | DATETIME NULL | Last time `get_option()` was called for this row |
+| `read_count` | BIGINT UNSIGNED | Cumulative read count within the tracking window |
+| `last_reader` | VARCHAR(255) | Slug of the plugin or theme that read the option most recently |
+| `reader_type` | ENUM('plugin','theme','core','unknown') | Reader kind |
+| `first_seen` | DATETIME | When this row was first recorded |
 
-インデックス: `last_read_at`, `reader_type`, `read_count`
+Indexes: `last_read_at`, `reader_type`, `read_count`.
 
-### 3.2 カスタムテーブル: `{prefix}_options_quarantine`
+### 3.2 Custom table: `{prefix}_options_quarantine`
 
-検疫中オプションの管理テーブル。詳細は「4.5 Quarantine」セクションを参照。
+Manages quarantined options. See §4.5 Quarantine for details.
 
-### 3.3 wp_options 側の参照カラム（既存・読み取り専用）
+### 3.3 Columns read from `wp_options` (existing, read-only)
 
-一覧表示・判定時に `wp_options` から直接取得する情報:
+The admin list and the inference pipeline pull these directly from `wp_options`:
 
-- `option_value` → シリアライズ後のバイト数
-- `autoload` → yes/no（WordPress 6.6 以降は `auto`, `on`, `off` も）
+- `option_value` → serialized-byte size.
+- `autoload` → yes/no (WordPress 6.6+ also: `auto`, `on`, `off`).
 
 ---
 
-## 4. モジュール設計
+## 4. Module design
 
-### 4.1 Tracker（読み込み追跡モジュール）
+### 4.1 Tracker (read-tracking module)
 
-#### 目的
+#### Purpose
 
-`get_option()` が呼ばれるたびに「いつ・誰が」読んだかを記録する。
+Record "when and by whom" every time `get_option()` is called.
 
-#### フック戦略
+#### Hook strategy
 
-`get_option()` 1回ごとの呼び出し元を正確に識別できるのは `option_{$name}` フィルタだけなので、**全オプションに対して動的に `option_{$name}` フィルタを登録**する。autoload/非autoload の区別はしない。
+The only hook that can attribute an individual `get_option()` call to its caller is `option_{$name}`, so Optrion **dynamically registers an `option_{$name}` filter for every option**. There is no split between autoload and non-autoload rows.
 
-| 対象 | フック | 説明 |
+| Target | Hook | Notes |
 |---|---|---|
-| すべての `wp_options` 行 | `option_{$name}` フィルタ（動的登録） | `plugins_loaded` 優先度 10 で全オプション名を取得し、ループで動的にフィルタ登録。`get_option()` のたびに発火するため、バックトレースから真の呼び出し元（プラグイン/テーマ）を正確に特定できる |
+| Every row in `wp_options` | `option_{$name}` filter (dynamic) | Registered on `plugins_loaded` priority 10 after fetching every option name. The filter fires on each `get_option()`, so the live backtrace points at the real caller (plugin/theme). |
 
-`alloptions` フィルタは**使用しない**。`wp_load_alloptions()` は 1 リクエスト中に何度も発火し、かつ「全 autoload オプションに単一の呼び出し元をまとめて attribution する」性質上、ある瞬間の呼び出し元（Yoast 等）が無関係のオプション（WooCommerce 等）にまで上書きされてしまうため。個別に `get_option()` されない autoload オプションは tracking テーブルに行が作られないが、`list_options` REST エンドポイントは `wp_options` を起点にアクセス元を推定するので UI 表示には影響しない（`tracking=null` の場合はプレフィックス照合にフォールバック）。
+The `alloptions` filter is **not** used. `wp_load_alloptions()` fires many times per request, and the filter attributes every autoloaded row to whichever single caller happens to be on the stack at that moment — so Yoast's stack frame ends up attributed to WooCommerce's options, and so on. Autoload options that are never individually `get_option()`'d simply don't get a tracking row; that is harmless because `Rest_Controller::list_options()` starts from `wp_options` and falls back to prefix matching when `tracking = null`.
 
-per-name フィルタを `plugins_loaded` 優先度 10 で登録するのは、Yoast SEO 等が `plugins_loaded` 優先度 14 で `get_option()` を呼ぶケースを取り逃がさないため（`admin_init` まで待つとそれらの読み込みが attribution されない）。
+The per-name filter is registered at `plugins_loaded` priority 10 (not `admin_init`) so reads coming from plugins that hook `plugins_loaded` at a higher priority (Yoast SEO runs its `wpseo_init` at priority 14, for example) are still captured.
 
-#### 呼び出し元の特定
+#### Caller attribution
 
-`debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15)` で呼び出しスタックをたどり、ファイルパスから所属を判定する。
-
-```
-判定ロジック:
-  ファイルパスが WP_PLUGIN_DIR 以下  → type=plugin, slug=ディレクトリ名
-  ファイルパスが get_theme_root() 以下 → type=theme,  slug=ディレクトリ名
-  上記いずれでもない                  → type=core
-```
-
-#### パフォーマンス制御
-
-- 追跡はメモリ上にバッファし、`shutdown` アクションで一括 DB 書き込み（1リクエスト1回のI/O）
-- `ON DUPLICATE KEY UPDATE` で upsert し、クエリ数を最小化
-- 追跡有効/無効は Transient フラグで制御。管理画面アクセス時に自動的に10分間有効化
-- WP-CLI やCron では無効化（`DOING_CRON` 定数で判定）
-- 本番運用時はサンプリングレート（例: 10%のリクエストのみ追跡）をオプション設定に追加
-
-#### 追跡の限界（設計上の前提）
-
-- 常時追跡ではないため read_count は「追跡期間中の近似値」である
-- `last_read_at = NULL` は「読み込みが記録されていない」であり「一度も読まれていない」ではない
-- 上記は管理画面の表示とアクセス元推定の両方に反映する
-
-### 4.2 Classifier（アクセス元推定モジュール）
-
-#### 目的
-
-各オプション行の**アクセス元**（そのオプションを読み書きしているプラグイン・テーマ・WordPress コア・ウィジェット）を推定し、管理画面に「素の判断材料」として提示する。合成スコアは計算せず、生シグナル（アクセス元／最終読み込み／autoload／サイズ）を個別カラムで表示し、削除可否の判断はユーザーに委ねる。
-
-#### アクセス元推定ロジック
-
-`get_option()` の PHP バックトレースおよび option_name のプレフィックスから、最終アクセス元を推定する。
+`debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15)` walks the call stack and classifies by file path:
 
 ```
-推定の優先順位:
-  1. WordPress コアオプションの既知リストとの照合（確定的シグナル）
-  2. widget_ プレフィックスによるウィジェット判定（確定的シグナル）
-  3. Tracker の last_reader（実測データ。reader_type が plugin/theme の場合のみ採用）
-  4. option_name プレフィックスとプラグインスラッグの前方一致
-  5. option_name プレフィックスとテーマスラッグの前方一致
-  6. いずれにも該当しない → unknown
+Classification rules:
+  file path is under WP_PLUGIN_DIR     → type=plugin, slug=directory name
+  file path is under get_theme_root()  → type=theme,  slug=directory name
+  neither of the above                 → type=unknown
 ```
 
-コアオプションの既知リストは WordPress Codex の Options Reference に準拠し、siteurl, home, blogname, active_plugins, template, stylesheet, cron, rewrite_rules 等の約60個をハードコードする。
+#### Performance controls
 
-#### active / inactive フラグ
+- Buffer in memory; flush once on `shutdown` (a single I/O per request).
+- `ON DUPLICATE KEY UPDATE` upsert to keep the query count minimal.
+- Tracking on/off is gated by a transient flag. Admin requests automatically set it for 10 minutes.
+- Disabled under WP-CLI and cron (`DOING_CRON` constant).
+- Production sites can lower the sampling rate (e.g. track only 10% of requests) through a plugin option.
 
-推定したアクセス元がインストール済みプラグイン/テーマのスラッグと一致した場合、そのプラグイン/テーマが**現在有効化されているか**を判定して `active` フラグとして付加する（`core` と `widget` は常に active、`unknown` は常に inactive 扱い）。
+#### Tracking limitations (by design)
 
-#### 管理画面での扱い
+- Tracking is not continuous, so `read_count` is "approximate for the tracking window".
+- `last_read_at = NULL` means "no read has been recorded", not "has never been read".
+- The admin UI and the accessor inference both account for that.
 
-- 一覧テーブルに accessor（表示名＋type＋inactive バッジ）、autoload バッジ、サイズ、最終読み込み日時を個別カラムで表示
-- ソート: option_name / accessor（accessor.name → slug → type の優先順で表示ラベル昇順）/ size / last_read。autoload はバイナリバッジのためソート対象外
-- フィルタ: accessor type、`inactive_only`（inactive なアクセス元のみ）、`autoload_only`（autoload=yes のみ）、`search`（option_name 部分一致）
-- `_transient_*` / `_site_transient_*` と自プラグイン内部オプション（`optrion_*`, `_optrion_q__*`）は一覧から除外
+### 4.2 Classifier (accessor inference module)
 
-### 4.3 Export / Import（バックアップモジュール）
+#### Purpose
 
-#### エクスポート JSON フォーマット
+Infer each option's **accessor** (the plugin, theme, WordPress core routine, or widget that reads/writes it) and present the raw signals to the admin. The module never computes a composite score; the displayed columns (accessor, last read, autoload, size) are enough for the user to make the call themselves.
+
+#### Accessor inference logic
+
+Priority order, using the PHP backtrace from `get_option()` and the `option_name` prefix:
+
+```
+  1. Exact match against the curated WordPress core options registry (deterministic).
+  2. `widget_` prefix → type=widget, slug=widget id (deterministic).
+  3. Tracker's last_reader (live data; only trusted when reader_type is plugin or theme).
+  4. Prefix match against installed plugin slugs.
+  5. Prefix match against installed theme slugs.
+  6. Otherwise → unknown.
+```
+
+The core options registry is a hard-coded list of roughly 60 WordPress-shipped option names (`siteurl`, `home`, `blogname`, `active_plugins`, `template`, `stylesheet`, `cron`, `rewrite_rules`, …) based on the WordPress Codex Options Reference.
+
+#### active / inactive flag
+
+When the inferred accessor matches an installed plugin/theme slug, Optrion adds an `active` flag reflecting whether the plugin/theme is currently activated. (`core` and `widget` are always active; `unknown` is always inactive.)
+
+#### Admin UI treatment
+
+- The list table exposes accessor (display name + type + inactive badge), an autoload badge, size, and last-read timestamp as individual columns.
+- Sort keys: option_name / accessor (accessor.name → slug → type precedence, ascending on the visible label) / size / last_read. Autoload is a binary badge, so it is not sortable.
+- Filters: accessor type, `inactive_only` (only inactive accessors), `autoload_only` (only `autoload=yes`), and `search` (substring match on option_name).
+- `_transient_*` / `_site_transient_*` rows and Optrion's own internal options (`optrion_*`, `_optrion_q__*`) are hidden from the list.
+
+### 4.3 Export / Import (backup module)
+
+#### Export JSON format
 
 ```json
 {
@@ -205,208 +204,208 @@ per-name フィルタを `plugins_loaded` 優先度 10 で登録するのは、Y
 }
 ```
 
-レガシーの `1.0.0` 形式（各エントリに `score` オブジェクトを含む）は Importer が互換で受け付け、`score` は無視される。
+Legacy `1.0.0` payloads (each entry had an extra `score` object) are still accepted by the importer; the `score` field is ignored.
 
-#### エクスポート仕様
+#### Export specification
 
-- 対象: 選択したオプション（UI で絞り込み → 選択）または CLI での accessor 条件指定での一括
-- ファイル名: `optrion-export-{site}-{date}.json`
-- 値はシリアライズされた状態のまま保存（復元時にそのまま INSERT できるように）
+- Targets: options selected in the UI, or bulk accessor-based filtering via the CLI.
+- Filename: `optrion-export-{site}-{date}.json`.
+- Values ship as they live in the DB (already serialized), so a restore is a plain `INSERT`.
 
-#### インポート仕様
+#### Import specification
 
-- JSON を読み込み、`option_name` が存在しない場合のみ INSERT（既存値は上書きしない）
-- 上書きモード（既存値を復元で上書き）はチェックボックスで明示的に選択
-- インポート前にドライランを表示（追加/上書き/スキップの件数プレビュー）
-- tracking データは参考として表示するが、復元時にはトラッキングテーブルには書き込まない
+- Reads the JSON and only `INSERT`s rows whose `option_name` is missing (existing rows are not overwritten by default).
+- Overwrite mode (update existing rows on restore) is an explicit checkbox.
+- A dry-run preview shows add / overwrite / skip counts before the real run.
+- The `tracking` subobject is displayed for reference only; the importer never writes to the tracking table during restore.
 
-### 4.4 Cleaner（削除モジュール）
+### 4.4 Cleaner (deletion module)
 
-#### 削除フロー
-
-```
-管理者が削除対象を選択
-        │
-        ▼
-  自動エクスポート（JSON を wp-content/optrion-backups/ に保存）
-        │
-        ▼
-  確認ダイアログ（対象件数・accessor 内訳を表示）
-        │
-        ▼
-  wp_options から DELETE + tracking テーブルからも DELETE
-        │
-        ▼
-  完了通知（削除件数 + バックアップファイルパスを表示）
-```
-
-#### 一括削除オプション
-
-- 「無効化されたプラグイン/テーマに属するオプションをすべて削除」（`--inactive-only` / UI の inactive-only フィルタ）
-- 「特定 accessor type に属するオプションをすべて削除」（`--accessor-type` / UI フィルタ）
-- 「期限切れ Transient をすべて削除」
-
-#### セーフガード
-
-- WordPress コアオプション（既知リスト）は削除ボタンを無効化し、UI にロックアイコンを表示
-- autoload 合計サイズの変動を削除前後で表示（「autoload データが 1.2MB → 0.8MB に削減」）
-- 直近バックアップ3世代を `wp-content/optrion-backups/` に保持。4世代目以降は古い順に自動削除
-
-### 4.5 Quarantine（検疫モード）
-
-#### 目的
-
-「たぶん不要だが、消すと何が壊れるかわからない」オプションを、**サイト挙動を変えずに**観察対象としてマークし、実際にアクセスされているかどうかを記録する仕組み。観察期間中に誰もアクセスしなければ安全に本削除、アクセスがあれば要復元として明示的にフラグを立てる。
-
-#### 仕組み
-
-`option_name` をリネーム（`wpseo_titles` → `_optrion_q__wpseo_titles`）しつつ、`pre_option_{original_name}` フィルタを動的登録してリネーム先から値を返す。結果として `get_option()` は検疫前と**同じ値**を返し、サイトは通常動作を続ける。フィルタ発火時にバックトレースでアクセス元を特定し、リクエスト末尾でマニフェスト行を更新する。
+#### Deletion flow
 
 ```
-隔離時:
+Admin selects rows to delete
+        │
+        ▼
+  Automatic export (JSON saved to wp-content/optrion-backups/)
+        │
+        ▼
+  Confirmation dialog (row count + accessor breakdown)
+        │
+        ▼
+  DELETE from wp_options + DELETE from the tracking table
+        │
+        ▼
+  Completion notice (deleted count + backup file path)
+```
+
+#### Bulk deletion options
+
+- "Delete all options owned by inactive plugins/themes" (`--inactive-only` CLI flag / inactive-only UI filter).
+- "Delete all options matching a specific accessor type" (`--accessor-type` / UI filter).
+- "Delete all expired transients".
+
+#### Safeguards
+
+- Known WordPress core options have their delete button disabled, and the UI shows a lock icon.
+- The autoload total size before/after deletion is surfaced on the UI (e.g. "autoload payload 1.2 MB → 0.8 MB").
+- The last three backup archives live in `wp-content/optrion-backups/`; older backups are pruned automatically.
+
+### 4.5 Quarantine module
+
+#### Purpose
+
+Flag options that "look unused but we are not 100% sure" for observation **without changing the site's behavior**, and record whether they are actually being read. If nothing accesses the option during the window it is safe to delete permanently; if something does access it the row is explicitly flagged as "needs restore".
+
+#### Mechanism
+
+When a row is quarantined, Optrion renames it (`wpseo_titles` → `_optrion_q__wpseo_titles`) AND registers a `pre_option_{original_name}` filter that returns the value from the renamed row. The net effect is that `get_option()` keeps returning **the same value** it returned before quarantine, so the site keeps running as usual. Every time the filter fires, Optrion records the access via the live backtrace and updates the manifest at the end of the request.
+
+```
+On quarantine:
   wp_options:   wpseo_titles  →  _optrion_q__wpseo_titles (autoload=no)
-  ランタイム:    add_filter('pre_option_wpseo_titles', 値を返すクロージャ)
+  runtime:      add_filter('pre_option_wpseo_titles', closure returning the stored value)
 
-復元時:
-  wp_options:   _optrion_q__wpseo_titles  →  wpseo_titles (autoload 復元)
-  ランタイム:    フィルタキャッシュから削除（クロージャは素通り）
+On restore:
+  wp_options:   _optrion_q__wpseo_titles  →  wpseo_titles (autoload restored)
+  runtime:      drop the cache entry (closure no-ops on the next call)
 
-本削除時:
-  wp_options:   _optrion_q__wpseo_titles を DELETE
-  ランタイム:    フィルタキャッシュから削除
+On permanent delete:
+  wp_options:   DELETE _optrion_q__wpseo_titles
+  runtime:      drop the cache entry
 ```
 
-リネーム時に `autoload=no` に変更するのは、リネーム済み行が alloptions に乗らないようにするため。値の提供は pre_option 経由なので autoload が不要になる。元の autoload 値はマニフェストに記録しておき、復元時に戻す。
+The quarantine rename flips `autoload` to `no` so the renamed row does not ride along in `alloptions`; Optrion serves the value through the `pre_option` filter instead, so autoload is no longer required. The original autoload value is saved on the manifest so restore can put it back.
 
-#### 検疫マニフェスト
+#### Quarantine manifest
 
-隔離中のオプションを管理する専用テーブル `{prefix}_options_quarantine`:
+Dedicated table `{prefix}_options_quarantine` tracks quarantined rows:
 
-| カラム | 型 | 説明 |
+| Column | Type | Description |
 |---|---|---|
-| `id` | BIGINT AUTO_INCREMENT PK | 検疫 ID |
-| `original_name` | VARCHAR(191) UNIQUE | 元の option_name |
-| `original_autoload` | VARCHAR(20) | 隔離前の autoload 値（復元用） |
-| `quarantined_at` | DATETIME | 隔離した日時 |
-| `expires_at` | DATETIME | 自動復元の期限（デフォルト: 7日後） |
-| `quarantined_by` | BIGINT | 操作した管理者の user ID |
-| `status` | ENUM('active','restored','deleted') | 現在の状態 |
-| `restored_at` | DATETIME NULL | 復元した日時 |
-| `deleted_at` | DATETIME NULL | 本削除した日時 |
-| `last_accessed_at` | DATETIME NULL | 検疫期間中に `get_option()` 経由でアクセスされた最終日時（pre_option フィルタが記録） |
-| `accessor_during_quarantine` | VARCHAR(255) | 最後にアクセスしたプラグイン/テーマのスラッグ |
+| `id` | BIGINT AUTO_INCREMENT PK | Quarantine id |
+| `original_name` | VARCHAR(191) UNIQUE | Pre-rename `option_name` |
+| `original_autoload` | VARCHAR(20) | Autoload value before quarantine (used on restore) |
+| `quarantined_at` | DATETIME | Timestamp of quarantine |
+| `expires_at` | DATETIME | Auto-restore deadline (default: 7 days out) |
+| `quarantined_by` | BIGINT | `user_id` of the admin who quarantined the row |
+| `status` | ENUM('active','restored','deleted') | Current state |
+| `restored_at` | DATETIME NULL | Restore timestamp |
+| `deleted_at` | DATETIME NULL | Permanent-delete timestamp |
+| `last_accessed_at` | DATETIME NULL | Last `get_option()` access during the window (written by the pre_option filter) |
+| `accessor_during_quarantine` | VARCHAR(255) | Slug of the plugin/theme that accessed it most recently |
 | `accessor_type_during_quarantine` | VARCHAR(20) | `plugin` / `theme` / `core` / `unknown` |
-| `access_count_during_quarantine` | BIGINT UNSIGNED | 検疫中の累計アクセス回数 |
-| `notes` | TEXT | 管理者メモ（任意） |
+| `access_count_during_quarantine` | BIGINT UNSIGNED | Cumulative access count during the window |
+| `notes` | TEXT | Optional admin note |
 
-#### 操作フロー
+#### Flow
 
 ```
-管理者がオプションを選択して「検疫」を実行
+Admin selects rows and runs "Quarantine"
         │
         ▼
-  wp_options 上で option_name をリネーム
-  autoload を 'no' に変更
-  マニフェストに記録（元の名前・autoload・期限）
+  Rename option_name in wp_options
+  Flip autoload to 'no'
+  Insert a manifest row (original name / autoload / expiry)
         │
         ▼
-  サイトを通常運用（get_option は pre_option フィルタ経由で元の値を返す）
+  Site continues to run normally (pre_option filter returns the stored value)
         │
-        ├── 観察期間中にアクセスがあれば ──→ マニフェストに記録
-        │                                  UI に「使用中・要復元」バッジ
-        │                                  自動期限切れ処理の対象外となる
+        ├── Access detected during the window ──→ update manifest
+        │                                       UI shows "in use — restore" badge
+        │                                       automatic expiry is skipped
         │
-        ├── 管理者が手動で復元 ──────────→ 「復元」ボタン
-        │                                  option_name / autoload を元に戻す
-        │                                  マニフェストの status を 'restored' に
+        ├── Admin restores manually ───────────→ "Restore" button
+        │                                       rename back to original_name / restore autoload
+        │                                       status flips to 'restored'
         │
-        ├── 観察期間中にアクセスなし ─────→ 「本削除」ボタンが有効
-        │                                  リネームされた行を DELETE
-        │                                  マニフェストの status を 'deleted' に
+        ├── No access during the window ───────→ "Delete" button is enabled
+        │                                       DELETE the renamed row
+        │                                       status flips to 'deleted'
         │
-        └── 期限切れ（アクセスなし・何もしなかった場合）
+        └── Window expires with no access
             ↓
-           自動復元 or 自動削除（設定）
-           管理画面に通知バナー表示
+           Auto-restore or auto-delete (per setting)
+           Admin screen shows a notice banner
 ```
 
-#### 期限と自動復元
+#### Expiry and auto-restore
 
-- デフォルト検疫期間: **7日間**（設定画面で 1〜30日に変更可能）
-- 期限切れ時の動作は選択式:
-  - **自動復元**（デフォルト・安全）: 元に戻し、管理者に通知
-  - **自動削除**（上級者向け）: JSON バックアップを作成した上で DELETE
-  - **放置**（期限を無期限に）: 手動で判断するまで隔離状態を維持
-- 自動処理は WordPress Cron（`optrion_quarantine_check`）で日次実行
-- **アクセスがあった検疫は自動処理の対象外**: `last_accessed_at IS NOT NULL` の行は cron の対象クエリに含めない。サイトで使用中のオプションを自動復元/削除して挙動を揺らさないため、管理者が明示的に復元するまで active のまま保持される
+- Default window: **7 days** (configurable, 1–30 days).
+- Expiry action is selectable:
+  - **Auto-restore** (default, safest): put the row back and notify the admin.
+  - **Auto-delete** (power users): write a JSON backup and `DELETE`.
+  - **Keep** (no expiry): hold the row as quarantined until the admin decides manually.
+- The sweep runs daily on WordPress cron (`optrion_quarantine_check`).
+- **Quarantines with recorded access are exempt from auto-processing**: rows with `last_accessed_at IS NOT NULL` are excluded from the cron query. We never auto-restore or auto-delete an option the site is still relying on; the admin must restore it explicitly.
 
-#### 検疫の制限事項
+#### Quarantine restrictions
 
-- WordPress コアオプション（既知リスト）は検疫対象外（ロック表示）
-- `active_plugins`, `template`, `stylesheet`, `cron` 等の重要オプションは追加で保護
-- 一度に検疫できる上限: **50件**（大量の同時隔離による事故を防止）
-- `_optrion_q__` プレフィックスが付いた option_name は合計191文字以内である必要がある。元の名前が178文字を超える場合は検疫不可とし、その旨をUIで表示
+- WordPress core options (the curated list) cannot be quarantined (the UI locks them).
+- `active_plugins`, `template`, `stylesheet`, `cron`, and a handful of other critical options get an extra guard.
+- Maximum simultaneous quarantines: **50** (prevents accidental mass isolation).
+- The renamed `option_name` (`_optrion_q__` prefix + original name) must fit in 191 characters; original names longer than 178 characters are rejected with a clear UI message.
 
-#### 検疫一覧の UI 表示
+#### Quarantine list UI
 
-オプション一覧テーブルとは別に、「検疫中」タブを設ける:
+A dedicated "Quarantine" tab next to the options list:
 
-| 列 | 内容 |
+| Column | Contents |
 |---|---|
-| 元の option_name | リネーム前の名前。検疫後のアクセスがあれば「使用中・要復元」バッジを表示 |
-| 隔離日時 | いつ検疫したか |
-| 残り期間 | 自動復元/削除までのカウントダウン（アクセスがあった行は対象外） |
-| 最終アクセス | 検疫中に `get_option()` されていれば日時、なければ `—` |
-| アクセス回数 | 検疫中の累計アクセス回数 |
-| アクセス元 | 検疫中にアクセスしたプラグイン/テーマ名と type |
-| 操作 | 「復元」「本削除」「期間延長」ボタン（アクセスがある行は本削除不可） |
+| Original name | Pre-rename name. Shows "in use — restore" badge when accessed during the window. |
+| Quarantined at | When the row was quarantined |
+| Time remaining | Countdown to auto-restore/delete (accessed rows are exempt) |
+| Last accessed | Timestamp if `get_option()` ran during the window, otherwise `—` |
+| Access count | Cumulative access count during the window |
+| Accessor | Plugin/theme and accessor type recorded during the window |
+| Actions | "Restore" / "Delete" / "Extend" buttons (Delete is blocked on rows with recorded accesses) |
 
-管理画面のヘッダーに常時表示するバッジ: 「検疫中: N件」
+A header badge "Quarantined: N" is always visible.
 
-#### WP-CLI 対応
+#### WP-CLI support
 
 ```bash
-# オプションを検疫（デフォルト7日間）
+# Quarantine options (default window: 7 days).
 wp optrion quarantine wpseo_titles wpseo_social --days=14
 
-# 検疫中オプション一覧
+# List quarantined options.
 wp optrion quarantine list
 
-# 復元
+# Restore.
 wp optrion quarantine restore wpseo_titles
 
-# 検疫から本削除
+# Permanent delete from quarantine.
 wp optrion quarantine delete wpseo_titles --yes
 
-# 期限切れチェック（Cron と同等の手動実行）
+# Run the expiry sweep manually (equivalent of the cron job).
 wp optrion quarantine check-expiry
 ```
 
 ---
 
-## 5. REST API 設計
+## 5. REST API
 
-ベース: `/wp-json/optrion/v1`
+Base: `/wp-json/optrion/v1`
 
-権限: すべてのエンドポイントで `manage_options` 権限を要求。
+Authorization: every endpoint requires the `manage_options` capability.
 
-| メソッド | パス | 説明 | 主なパラメータ |
+| Method | Path | Description | Primary parameters |
 |---|---|---|---|
-| GET | `/options` | オプション一覧（accessor / tracking / autoload / size 付き） | `page`, `per_page`, `orderby`, `order`, `accessor_type`, `inactive_only`, `autoload_only`, `search` |
-| GET | `/options/{name}` | 単一オプションの詳細 | — |
-| DELETE | `/options` | 一括削除（自動バックアップ付き） | `names[]` |
-| GET | `/stats` | サマリー統計（合計件数、autoload サイズ） | — |
-| POST | `/export` | 選択オプションを JSON エクスポート | `names[]` |
-| POST | `/import` | JSON インポート | `file`（multipart）, `overwrite`（bool） |
-| POST | `/import/preview` | インポートのドライラン | `file`（multipart） |
-| POST | `/scan` | トラッキングの手動スナップショット実行 | — |
-| POST | `/quarantine` | 選択オプションを検疫（リネーム） | `names[]`, `days`（期限日数） |
-| GET | `/quarantine` | 検疫中オプション一覧 | `status`（active/restored/deleted） |
-| POST | `/quarantine/restore` | 検疫から復元 | `names[]` |
-| DELETE | `/quarantine` | 検疫から本削除 | `names[]` |
-| PATCH | `/quarantine/{name}` | 期間延長・メモ更新 | `days`, `notes` |
+| GET | `/options` | List options (with accessor / tracking / autoload / size) | `page`, `per_page`, `orderby`, `order`, `accessor_type`, `inactive_only`, `autoload_only`, `search` |
+| GET | `/options/{name}` | Single-option detail | — |
+| DELETE | `/options` | Bulk delete with automatic backup | `names[]` |
+| GET | `/stats` | Summary stats (total rows, autoload size) | — |
+| POST | `/export` | Export selected options as JSON | `names[]` |
+| POST | `/import` | Import JSON | `file` (multipart), `overwrite` (bool) |
+| POST | `/import/preview` | Import dry-run | `file` (multipart) |
+| POST | `/scan` | Manual tracker snapshot | — |
+| POST | `/quarantine` | Quarantine selected options (rename) | `names[]`, `days` (expiry) |
+| GET | `/quarantine` | List quarantined options | `status` (active/restored/deleted) |
+| POST | `/quarantine/restore` | Restore from quarantine | `names[]` |
+| DELETE | `/quarantine` | Permanent delete from quarantine | `names[]` |
+| PATCH | `/quarantine/{name}` | Extend window / update note | `days`, `notes` |
 
-### レスポンス例: `GET /options`
+### Example response: `GET /options`
 
 ```json
 {
@@ -439,181 +438,177 @@ wp optrion quarantine check-expiry
 
 ---
 
-## 6. 管理画面 UI 設計
+## 6. Admin UI design
 
-### 6.1 画面構成
+### 6.1 Screen layout
 
-WordPress 管理メニューにトップレベル項目として「Optrion」を追加（専用ロゴアイコン付き）。
+Optrion adds a top-level "Optrion" menu (with a dedicated branded icon) to the WordPress admin.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  Optrion                                                │
-├──────────────┬────────────────┬────────┬─────────────────────────┤
-│ ダッシュボード │ オプション一覧 │ 検疫中 │ インポート              │
-└──────────────┴────────────────┴────────┴─────────────────────────┘
+│  Optrion                                                         │
+├──────────────┬────────────────┬──────────────┬───────────────────┤
+│ Dashboard    │ Options        │ Quarantine   │ Import            │
+└──────────────┴────────────────┴──────────────┴───────────────────┘
 ```
 
-エクスポートは独立タブを持たず、オプション一覧テーブルの一括操作として
-「Export selected」ボタンから実行する。
+Export has no dedicated tab; it runs from the options list via the "Export selected" bulk action.
 
-### 6.2 ダッシュボード
+### 6.2 Dashboard
 
-サマリーカード5枚を上部に横並び表示:
+Five summary cards laid out side by side:
 
-| カード | 表示内容 |
+| Card | Contents |
 |---|---|
-| 総オプション数 | `wp_options` の総行数 |
-| Autoload サイズ | `autoload=yes` の合計バイト数 |
-| inactive アクセス元 | アクセス元が無効化されたプラグイン/テーマの件数 |
-| 期限切れ Transient | 有効期限を過ぎた transient の件数 |
-| 検疫中 | 現在隔離中のオプション件数（期限切れ間近のものは警告色） |
+| Total options | Total row count in `wp_options` |
+| Autoload payload | Byte sum of `autoload=yes` rows |
+| Inactive accessors | Count of options whose accessor is an inactive plugin/theme |
+| Expired transients | Count of transients past their expiry |
+| Quarantined | Currently active quarantines (warning color when close to expiry) |
 
-下部にチャート:
+Chart:
 
-- **アクセス元別オプション数**: プラグイン/テーマごとの棒グラフ（有効/無効で色分け）
+- **Options per accessor**: horizontal bar chart per plugin/theme, color-coded by active/inactive.
 
-### 6.3 オプション一覧
+### 6.3 Options list
 
-データテーブル形式。各行に表示する列:
+Data-table layout. Columns per row:
 
-| 列 | 内容 |
+| Column | Contents |
 |---|---|
-| チェックボックス | 一括操作用（WordPress コアアクセス元の行は選択不可） |
-| option_name | クリックで値のプレビューモーダルを表示 |
-| アクセス元 | プラグイン/テーマ名 + type + 無効化されている場合は inactive バッジ |
-| Autoload | autoload=yes の行にはバッジ、それ以外は薄色でraw値 |
-| サイズ | バイト数（人間可読表記） |
-| 最終読み込み | タイムスタンプ（未計測は —） |
+| Checkbox | For bulk actions (core-accessor rows cannot be selected) |
+| option_name | Clicking opens the value preview modal |
+| Accessor | Plugin/theme name + type; inactive badge when the accessor is deactivated |
+| Autoload | Badge for autoload=yes rows; raw value in muted color otherwise |
+| Size | Byte count (human-readable) |
+| Last accessed | Timestamp, `—` when untracked |
 
-フィルタバー:
-- テキスト検索（option_name 部分一致）
-- アクセス元種別（plugin / theme / widget / core / unknown）
-- inactive のみ（アクセス元が無効化されているプラグイン/テーマのみ）
-- autoload のみ
-- WordPress-Core の行の表示/非表示
+Filter bar:
+- Text search (substring on option_name).
+- Accessor type (plugin / theme / widget / core / unknown).
+- Inactive only (accessor is an inactive plugin/theme).
+- Autoload only.
+- Show / hide WordPress-core rows.
 
-一括操作:
-- 選択項目を検疫
-- 選択項目を削除
-- 選択項目をエクスポート
+Bulk actions:
+- Quarantine selected.
+- Delete selected.
+- Export selected.
 
-### 6.4 値プレビューモーダル
+### 6.4 Value preview modal
 
-option_name をクリックすると表示:
+Clicking `option_name` opens a modal with:
 
-- `option_value` の内容（配列/オブジェクトなら整形表示）
-- accessor、autoload、サイズ、最終読み込み日時、read_count
-- 「削除」「エクスポート」ボタン
+- `option_value` contents (pretty-printed for arrays/objects).
+- Accessor, autoload, size, last-read timestamp, `read_count`.
+- "Delete" / "Export" buttons.
 
-### 6.5 エクスポート
+### 6.5 Export
 
-エクスポート専用画面は存在しない。オプション一覧テーブルで選択した行を
-一括操作バーの「Export selected」ボタンから JSON ファイルとしてダウンロードする。
-accessor 条件での一括エクスポートは WP-CLI（`wp optrion export --accessor-type=<type>` や
-`wp optrion export --inactive-only`）を利用する。
+There is no dedicated export screen. Select rows in the options table and use the "Export selected" bulk action to download the JSON. Accessor-based bulk export is available through WP-CLI (`wp optrion export --accessor-type=<type>`, `wp optrion export --inactive-only`).
 
-### 6.6 インポート画面
+### 6.6 Import screen
 
-- JSON ファイルをアップロード
-- ドライラン結果をテーブルで表示（追加 / 上書き / スキップの件数と一覧）
-- 上書きモードの ON/OFF
-- 「インポート実行」→ 結果サマリー表示
+- Upload a JSON file.
+- Dry-run result shown as a table (add / overwrite / skip counts).
+- Overwrite mode toggle.
+- "Run import" → result summary.
 
 ---
 
-## 7. セキュリティ設計
+## 7. Security
 
-| 観点 | 対策 |
+| Concern | Mitigation |
 |---|---|
-| 権限 | 全操作に `manage_options` ケーパビリティ必須 |
-| CSRF | REST API は WordPress 標準の nonce 認証（`X-WP-Nonce`） |
-| SQL インジェクション | `$wpdb->prepare()` を全クエリで使用 |
-| ファイル操作 | バックアップディレクトリに `.htaccess` で直接アクセス禁止 |
-| インポート検証 | JSON スキーマバリデーション。version フィールドの存在確認。option_name の文字種チェック（英数字・アンダースコア・ハイフンのみ） |
-| コアオプション保護 | 既知のコアオプション約60個はハードコードしたリストで DELETE を拒否 |
+| Capability | Every operation requires `manage_options` |
+| CSRF | REST API relies on the standard WordPress nonce middleware (`X-WP-Nonce`) |
+| SQL injection | `$wpdb->prepare()` on every query |
+| File handling | Backup directory protected with an `.htaccess` that denies direct access |
+| Import validation | JSON schema validation, `version` header required, `option_name` character check (alphanumerics, underscores, hyphens only) |
+| Core option protection | The curated ~60-entry core options list blocks DELETE for those names |
 
 ---
 
-## 8. パフォーマンス設計
+## 8. Performance
 
-| 懸念点 | 対策 |
+| Concern | Mitigation |
 |---|---|
-| `debug_backtrace` のコスト | フレーム数を15に制限。IGNORE_ARGS フラグで引数コピーを抑制 |
-| 毎リクエストの DB 書き込み | メモリバッファ → shutdown で1回の upsert |
-| `option_{$name}` フック登録 | `plugins_loaded` 優先度 10 で一度だけ実行。フロントエンドでは登録しない（tracking 無効時は早期 return） |
-| 大量オプション（数千行）の一覧取得 | REST API でページネーション（デフォルト50件/ページ）。accessor 推定はリクエスト時にオンデマンド |
-| 追跡のオーバーヘッド | Transient フラグで有効/無効を制御。サンプリングレート設定（設定画面で 1–100% を指定） |
+| `debug_backtrace` cost | Frame limit set to 15; `IGNORE_ARGS` flag to suppress argument copying |
+| Per-request DB writes | Memory buffer flushed as one upsert on `shutdown` |
+| `option_{$name}` hook registration | Runs once on `plugins_loaded` priority 10; not registered for front-end requests (tracking short-circuits when the transient is off) |
+| Large option sets (thousands of rows) | REST pagination (default 50/page); accessor inference is computed on demand per request |
+| Tracking overhead | Transient flag gates activation; a sampling rate (1–100%) is configurable via the settings screen |
 
 ---
 
-## 9. WP-CLI 対応
+## 9. WP-CLI
 
-管理画面を使わない運用向けに、WP-CLI サブコマンドも提供する。
+WP-CLI subcommands cover operators who run the plugin headless:
 
 ```bash
-# オプション一覧（accessor / autoload / size / last_read 列）
+# List options (accessor / autoload / size / last_read columns).
 wp optrion list --format=table
 
-# 無効化されたプラグイン/テーマが所有するオプションだけ表示
+# Show only options owned by inactive plugins/themes.
 wp optrion list --inactive-only
 
-# accessor タイプで絞り込み
+# Filter by accessor type.
 wp optrion list --accessor-type=plugin
 
-# 統計サマリー
+# Summary stats.
 wp optrion stats
 
-# 無効化されたプラグイン/テーマのオプションを JSON エクスポート
+# Export options owned by inactive plugins/themes.
 wp optrion export --inactive-only --output=backup.json
 
-# 指定名の一括エクスポート
+# Export by explicit name list.
 wp optrion export --names=opt_a,opt_b --output=backup.json
 
-# JSON インポート（ドライラン）
+# Import JSON (dry run).
 wp optrion import backup.json --dry-run
 
-# JSON インポート（実行）
+# Import JSON (for real).
 wp optrion import backup.json
 
-# 無効化されたプラグイン/テーマのオプションを一括削除（自動バックアップ付き）
+# Bulk-delete options owned by inactive plugins/themes (automatic backup).
 wp optrion clean --inactive-only --yes
 
-# 期限切れ Transient 一括削除
+# Delete expired transients.
 wp optrion clean-transients
 
-# 手動スキャン実行
+# Manual scan.
 wp optrion scan
 ```
 
 ---
 
-## 10. ファイル構成
+## 10. File layout
 
 ```
 optrion/
-├── optrion.php          # メインプラグインファイル（ブートストラップ）
-├── readme.txt                      # WordPress.org 形式の readme
-├── uninstall.php                   # アンインストール時のクリーンアップ
+├── optrion.php                    # Main plugin file (bootstrap)
+├── readme.txt                     # WordPress.org-flavoured readme
+├── uninstall.php                  # Cleanup on plugin uninstall
 │
 ├── includes/
-│   ├── class-tracker.php           # Tracker モジュール
-│   ├── class-classifier.php        # Classifier モジュール（アクセス元推定）
-│   ├── class-exporter.php          # Export 機能
-│   ├── class-importer.php          # Import 機能
-│   ├── class-cleaner.php           # 削除処理
-│   ├── class-quarantine.php        # 検疫モード
-│   ├── class-rest-controller.php   # REST API 定義
-│   ├── class-admin-page.php        # 管理画面の登録・アセット読み込み
-│   ├── class-cli-command.php       # WP-CLI サブコマンド
-│   └── core-options-list.php       # コアオプションの既知リスト（配列定数）
+│   ├── class-tracker.php          # Tracker module
+│   ├── class-classifier.php       # Classifier (accessor inference)
+│   ├── class-exporter.php         # Export
+│   ├── class-importer.php         # Import
+│   ├── class-cleaner.php          # Deletion
+│   ├── class-quarantine.php       # Quarantine mode
+│   ├── class-rest-controller.php  # REST API
+│   ├── class-admin-page.php       # Admin page registration / asset enqueue
+│   ├── class-cli-command.php      # WP-CLI subcommands
+│   └── core-options-list.php      # Core options registry (array constant)
 │
 ├── assets/
 │   ├── js/
-│   │   └── admin-app.js            # React ダッシュボード（ビルド済み）
+│   │   └── admin-app.js           # Built React dashboard
 │   └── css/
-│       └── admin.css               # 管理画面用スタイル
+│       └── admin.css              # Admin styles
 │
-├── src/                            # React ソース（ビルド前）
+├── src/                           # React source
 │   ├── App.jsx
 │   ├── pages/
 │   │   ├── Dashboard.jsx
@@ -637,21 +632,21 @@ optrion/
 
 ---
 
-## 11. ライフサイクル
+## 11. Lifecycle
 
-| イベント | 処理内容 |
+| Event | Action |
 |---|---|
-| **有効化** | カスタムテーブル作成（tracking + quarantine）。全オプションの初回スナップショット |
-| **日常運用** | 管理画面アクセス時に追跡を自動有効化。shutdown でバッチ記録 |
-| **無効化** | Cron ジョブの解除のみ。テーブル・データは保持 |
-| **アンインストール** | カスタムテーブル DROP。バックアップディレクトリ削除。プラグイン自身のオプション削除（皮肉にならないよう確実に） |
+| **Activate** | Create custom tables (tracking + quarantine); snapshot every option on first run |
+| **Daily operation** | Tracking auto-enables on admin visits; batches are written on `shutdown` |
+| **Deactivate** | Unschedule the cron job; tables and data are preserved |
+| **Uninstall** | DROP custom tables; remove the backup directory; delete the plugin's own options (no irony allowed) |
 
 ---
 
-## 12. 今後の拡張案
+## 12. Future extensions
 
-- **差分レポートメール**: 週次で「新規に検出された不要オプション」をメール通知
-- **マルチサイト対応**: `wp_sitemeta` テーブルの同等スキャン
-- **REST API ログ連携**: Query Monitor 等の開発ツールとの統合
-- **オプションサイズの時系列推移**: autoload 合計サイズを日次で記録し、肥大化傾向をグラフ化
-- **ホワイトリスト管理**: 「このオプションは残す」と明示的にマークし、一覧からピン留め／除外できる機能
+- **Weekly diff email**: email digest of "newly detected unused options" once a week.
+- **Multisite**: the equivalent scan for the `wp_sitemeta` table.
+- **REST API log integration**: interop with dev tools like Query Monitor.
+- **Autoload size time series**: log the autoload total daily and graph the bloat trend.
+- **Whitelist management**: let users explicitly pin / exclude "keep this option" rows from the main list.
