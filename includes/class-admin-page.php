@@ -56,34 +56,32 @@ final class Admin_Page {
 	}
 
 	/**
-	 * Prevents WordPress from recoloring the multi-colored Optrion menu icon.
+	 * Keeps the branded menu icon fully saturated.
 	 *
-	 * WordPress applies CSS filters to SVG menu icons to match the admin color
-	 * scheme. This overrides those filters so the branded colors are preserved.
+	 * WordPress dims menu icon images with opacity:0.6 by default; override it
+	 * so the branded colors read at their intended intensity.
 	 */
 	public static function menu_icon_css(): void {
 		echo '<style>'
-			. '#adminmenu .toplevel_page_' . esc_attr( self::MENU_SLUG ) . ' .wp-menu-image img,'
-			. '#adminmenu .toplevel_page_' . esc_attr( self::MENU_SLUG ) . ' .wp-menu-image svg'
-			. '{filter:none!important;}'
+			. '#adminmenu .toplevel_page_' . esc_attr( self::MENU_SLUG ) . ' .wp-menu-image img'
+			. '{opacity:1;}'
 			. '</style>';
 	}
 
 	/**
-	 * Returns the admin menu icon as a data URI, or a dashicon fallback.
+	 * Returns the admin menu icon URL, or a dashicon fallback.
 	 *
-	 * WordPress recolors SVG menu icons via CSS filters when the fill matches
-	 * the admin scheme (#a7aaad), so the source SVG uses that neutral tone.
+	 * A plain URL is used instead of a base64 data URI so that wp.svgPainter
+	 * (wp-admin/js/svg-painter.js) does not rewrite every `fill` attribute to
+	 * the admin color scheme's base color. The painter only scans elements
+	 * whose background-image starts with `data:image/svg+xml;base64,`.
 	 *
 	 * @return string
 	 */
 	private static function menu_icon(): string {
 		$icon_path = OPTRION_DIR . 'assets/optrion-menu-icon.svg';
 		if ( is_readable( $icon_path ) ) {
-			$svg = file_get_contents( $icon_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			if ( is_string( $svg ) && '' !== $svg ) {
-				return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-			}
+			return OPTRION_URL . 'assets/optrion-menu-icon.svg';
 		}
 		return 'dashicons-admin-generic';
 	}
