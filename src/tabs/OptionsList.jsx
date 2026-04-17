@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback, useMemo, useRef } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
@@ -92,6 +92,44 @@ const OptionsList = () => {
 				next.delete( item.option_name );
 			} else {
 				next.add( item.option_name );
+			}
+			return next;
+		} );
+	};
+
+	const selectableNames = useMemo(
+		() =>
+			visibleItems
+				.filter( ( item ) => ! isProtected( item ) )
+				.map( ( item ) => item.option_name ),
+		[ visibleItems ]
+	);
+
+	const selectedSelectableCount = useMemo(
+		() => selectableNames.filter( ( name ) => selected.has( name ) ).length,
+		[ selectableNames, selected ]
+	);
+
+	const allSelectableChecked =
+		selectableNames.length > 0 &&
+		selectedSelectableCount === selectableNames.length;
+	const someSelectableChecked =
+		selectedSelectableCount > 0 && ! allSelectableChecked;
+
+	const selectAllRef = useRef( null );
+	useEffect( () => {
+		if ( selectAllRef.current ) {
+			selectAllRef.current.indeterminate = someSelectableChecked;
+		}
+	}, [ someSelectableChecked ] );
+
+	const toggleAllVisible = () => {
+		setSelected( ( prev ) => {
+			const next = new Set( prev );
+			if ( allSelectableChecked ) {
+				selectableNames.forEach( ( name ) => next.delete( name ) );
+			} else {
+				selectableNames.forEach( ( name ) => next.add( name ) );
 			}
 			return next;
 		} );
@@ -320,7 +358,19 @@ const OptionsList = () => {
 				<table className="widefat striped">
 					<thead>
 						<tr>
-							<th style={ { width: 32 } }></th>
+							<th style={ { width: 32 } }>
+								<input
+									type="checkbox"
+									ref={ selectAllRef }
+									checked={ allSelectableChecked }
+									disabled={ selectableNames.length === 0 }
+									onChange={ toggleAllVisible }
+									aria-label={ __(
+										'Select all options on this page',
+										'optrion'
+									) }
+								/>
+							</th>
 							{ COLUMNS.map( ( col ) =>
 								col.sortable ? (
 									<th key={ col.key }>

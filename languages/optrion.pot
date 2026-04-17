@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-17T12:34:20+00:00\n"
+"POT-Creation-Date: 2026-04-17T13:37:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: optrion\n"
@@ -172,7 +172,7 @@ msgstr ""
 #: build/index.js:1
 #: build/index.js:9
 #: src/tabs/OptionsList.jsx:31
-#: src/tabs/OptionsList.jsx:238
+#: src/tabs/OptionsList.jsx:276
 #: src/tabs/Quarantine.jsx:92
 msgid "Accessor"
 msgstr ""
@@ -215,77 +215,77 @@ msgid "Options"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:202
+#: src/tabs/OptionsList.jsx:240
 msgid "Accessor plugin/theme is currently inactive."
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:207
+#: src/tabs/OptionsList.jsx:245
 msgid "inactive"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:213
+#: src/tabs/OptionsList.jsx:251
 msgid "WordPress core option — cannot be selected or deleted."
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:218
+#: src/tabs/OptionsList.jsx:256
 msgid "protected"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:230
+#: src/tabs/OptionsList.jsx:268
 msgid "Search"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:241
+#: src/tabs/OptionsList.jsx:279
 msgid "All"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:254
+#: src/tabs/OptionsList.jsx:292
 msgid "Inactive accessors only"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:262
+#: src/tabs/OptionsList.jsx:300
 msgid "Autoload only"
 msgstr ""
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:270
+#: src/tabs/OptionsList.jsx:308
 msgid "Show WordPress-Core"
 msgstr ""
 
 #. translators: %d: number of quarantined options.
 #: build/index.js:3
-#: src/tabs/OptionsList.jsx:137
+#: src/tabs/OptionsList.jsx:175
 #, js-format
 msgid "%d option(s) quarantined."
 msgstr ""
 
 #: build/index.js:3
-#: src/tabs/OptionsList.jsx:281
+#: src/tabs/OptionsList.jsx:319
 msgid "Quarantine selected"
 msgstr ""
 
 #. translators: %d: number of exported options.
 #: build/index.js:5
-#: src/tabs/OptionsList.jsx:162
+#: src/tabs/OptionsList.jsx:200
 #, js-format
 msgid "%d option(s) exported."
 msgstr ""
 
 #: build/index.js:5
-#: src/tabs/OptionsList.jsx:288
+#: src/tabs/OptionsList.jsx:326
 msgid "Export selected"
 msgstr ""
 
 #. translators: %d: number of options about to be deleted.
 #: build/index.js:6
-#: src/tabs/OptionsList.jsx:106
+#: src/tabs/OptionsList.jsx:144
 #, js-format
 msgid ""
 "Permanently delete %d option(s)?\n"
@@ -295,52 +295,57 @@ msgstr ""
 
 #. translators: %d: number of deleted options.
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:122
+#: src/tabs/OptionsList.jsx:160
 #, js-format
 msgid "%d option(s) deleted."
 msgstr ""
 
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:296
+#: src/tabs/OptionsList.jsx:334
 msgid "Delete selected"
 msgstr ""
 
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:300
+#: src/tabs/OptionsList.jsx:338
 #, js-format
 msgid "%1$d selected · %2$d matches"
 msgstr ""
 
+#: build/index.js:8
+#: src/tabs/OptionsList.jsx:368
+msgid "Select all options on this page"
+msgstr ""
+
 #. translators: %s: column heading label (e.g. "Size").
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:333
+#: src/tabs/OptionsList.jsx:383
 #, js-format
 msgid "Sort by %s"
 msgstr ""
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:366
+#: src/tabs/OptionsList.jsx:416
 msgid "WordPress core option — protected"
 msgstr ""
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:384
+#: src/tabs/OptionsList.jsx:434
 msgid "autoload"
 msgstr ""
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:411
+#: src/tabs/OptionsList.jsx:461
 msgid "Previous"
 msgstr ""
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:413
+#: src/tabs/OptionsList.jsx:463
 #, js-format
 msgid "Page %d"
 msgstr ""
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:419
+#: src/tabs/OptionsList.jsx:469
 msgid "Next"
 msgstr ""
 

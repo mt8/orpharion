@@ -114,7 +114,7 @@ msgstr "オプションが見つかりません。"
 #: build/index.js:1
 #: build/index.js:9
 #: src/tabs/OptionsList.jsx:31
-#: src/tabs/OptionsList.jsx:238
+#: src/tabs/OptionsList.jsx:276
 #: src/tabs/Quarantine.jsx:92
 msgid "Accessor"
 msgstr "アクセス元"
@@ -183,122 +183,122 @@ msgid "Autoload payload"
 msgstr "自動読み込みサイズ"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:202
+#: src/tabs/OptionsList.jsx:240
 msgid "Accessor plugin/theme is currently inactive."
 msgstr "アクセス元のプラグイン／テーマは現在無効化されています。"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:207
+#: src/tabs/OptionsList.jsx:245
 msgid "inactive"
 msgstr "無効"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:213
+#: src/tabs/OptionsList.jsx:251
 msgid "WordPress core option — cannot be selected or deleted."
 msgstr "WordPress コアオプション — 選択・削除できません。"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:218
+#: src/tabs/OptionsList.jsx:256
 msgid "protected"
 msgstr "保護"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:230
+#: src/tabs/OptionsList.jsx:268
 msgid "Search"
 msgstr "検索"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:241
+#: src/tabs/OptionsList.jsx:279
 msgid "All"
 msgstr "すべて"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:254
+#: src/tabs/OptionsList.jsx:292
 msgid "Inactive accessors only"
 msgstr "無効のアクセス元"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:262
+#: src/tabs/OptionsList.jsx:300
 msgid "Autoload only"
 msgstr "自動読み込みのみ"
 
 #: build/index.js:1
-#: src/tabs/OptionsList.jsx:270
+#: src/tabs/OptionsList.jsx:308
 msgid "Show WordPress-Core"
 msgstr "WordPress コアのオプションを表示"
 
 #. translators: %d: number of quarantined options.
 #: build/index.js:3
-#: src/tabs/OptionsList.jsx:137
+#: src/tabs/OptionsList.jsx:175
 #, js-format
 msgid "%d option(s) quarantined."
 msgstr "%d 件のオプションを検疫しました。"
 
 #: build/index.js:3
-#: src/tabs/OptionsList.jsx:281
+#: src/tabs/OptionsList.jsx:319
 msgid "Quarantine selected"
 msgstr "選択項目を検疫"
 
 #. translators: %d: number of exported options.
 #: build/index.js:5
-#: src/tabs/OptionsList.jsx:162
+#: src/tabs/OptionsList.jsx:200
 #, js-format
 msgid "%d option(s) exported."
 msgstr "%d 件のオプションをエクスポートしました。"
 
 #: build/index.js:5
-#: src/tabs/OptionsList.jsx:288
+#: src/tabs/OptionsList.jsx:326
 msgid "Export selected"
 msgstr "選択項目をエクスポート"
 
 #. translators: %d: number of deleted options.
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:122
+#: src/tabs/OptionsList.jsx:160
 #, js-format
 msgid "%d option(s) deleted."
 msgstr "%d 件のオプションを削除しました。"
 
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:296
+#: src/tabs/OptionsList.jsx:334
 msgid "Delete selected"
 msgstr "選択項目を削除"
 
 #: build/index.js:8
-#: src/tabs/OptionsList.jsx:300
+#: src/tabs/OptionsList.jsx:338
 #, js-format
 msgid "%1$d selected · %2$d matches"
 msgstr "%1$d 件選択中 · %2$d 件該当"
 
 #. translators: %s: column heading label (e.g. "Size").
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:333
+#: src/tabs/OptionsList.jsx:383
 #, js-format
 msgid "Sort by %s"
 msgstr "%s で並び替え"
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:366
+#: src/tabs/OptionsList.jsx:416
 msgid "WordPress core option — protected"
 msgstr "WordPress コアオプション — 保護されています"
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:384
+#: src/tabs/OptionsList.jsx:434
 msgid "autoload"
 msgstr "自動読み込み"
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:411
+#: src/tabs/OptionsList.jsx:461
 msgid "Previous"
 msgstr "前へ"
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:413
+#: src/tabs/OptionsList.jsx:463
 #, js-format
 msgid "Page %d"
 msgstr "%d ページ"
 
 #: build/index.js:9
-#: src/tabs/OptionsList.jsx:419
+#: src/tabs/OptionsList.jsx:469
 msgid "Next"
 msgstr "次へ"
 
@@ -439,7 +439,7 @@ msgstr "各 wp_options 行にアクセスするプラグイン／テーマを追
 
 #. translators: %d: number of options about to be deleted.
 #: build/index.js:6
-#: src/tabs/OptionsList.jsx:106
+#: src/tabs/OptionsList.jsx:144
 #, js-format
 msgid ""
 "Permanently delete %d option(s)?\n"
@@ -449,3 +449,8 @@ msgstr ""
 "%d 件のオプションを完全に削除しますか？\n"
 "\n"
 "Optrion はサーバー側にバックアップを書き出しません。復元用のコピーが必要な場合は、一度キャンセルし、「選択項目をエクスポート」で JSON ファイルをお手元にダウンロードしてから、改めて削除してください。"
+
+#: build/index.js:8
+#: src/tabs/OptionsList.jsx:368
+msgid "Select all options on this page"
+msgstr "このページのすべてのオプションを選択"
