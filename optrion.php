@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Optrion
  * Plugin URI:        https://github.com/mt8/optrion
- * Description:       Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans with an automatic backup.
+ * Description:       Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans.
  * Version:           1.0.0
  * Requires at least: 5.8
  * Requires PHP:      8.3
