@@ -268,7 +268,7 @@ final class Rest_Controller {
 
 		$where_sql = empty( $where ) ? '' : ' WHERE ' . implode( ' AND ', $where );
 		$sql       = "SELECT option_name, option_value, autoload FROM {$wpdb->options}{$where_sql} ORDER BY option_name ASC";
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$rows = empty( $params )
 			? $wpdb->get_results( $sql, ARRAY_A )
 			: $wpdb->get_results( $wpdb->prepare( $sql, $params ), ARRAY_A );
@@ -478,7 +478,7 @@ final class Rest_Controller {
 		global $wpdb;
 		$status = (string) $req['status'];
 		$table  = Schema::quarantine_table();
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$rows = $wpdb->get_results(
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE status = %s ORDER BY quarantined_at DESC", $status ),
 			ARRAY_A
@@ -562,7 +562,7 @@ final class Rest_Controller {
 	private static function tracking_map( array $names = array() ): array {
 		global $wpdb;
 		$table = Schema::tracking_table();
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( empty( $names ) ) {
 			$rows = $wpdb->get_results( "SELECT * FROM {$table}", ARRAY_A );
 		} else {

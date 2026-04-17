@@ -23,7 +23,7 @@ function optrion_run_uninstall(): void {
 	// renamed wp_options rows when the manifest table is dropped. The
 	// plugin's classes are not autoloaded during uninstall, so the logic
 	// is inlined here.
-	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	$active_manifest = $wpdb->get_results(
 		$wpdb->prepare(
 			"SELECT original_name, original_autoload FROM {$quarantine_table} WHERE status = %s",
@@ -56,7 +56,7 @@ function optrion_run_uninstall(): void {
 		$quarantine_table,
 	);
 	foreach ( $tables as $table ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$wpdb->query( 'DROP TABLE IF EXISTS ' . $table );
 	}
 

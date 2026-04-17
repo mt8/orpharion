@@ -24,11 +24,6 @@ define( 'OPTRION_FILE', __FILE__ );
 define( 'OPTRION_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OPTRION_URL', plugin_dir_url( __FILE__ ) );
 
-$optrion_autoload = OPTRION_DIR . 'vendor/autoload.php';
-if ( is_readable( $optrion_autoload ) ) {
-	require_once $optrion_autoload;
-}
-
 require_once OPTRION_DIR . 'includes/class-schema.php';
 require_once OPTRION_DIR . 'includes/class-core-options.php';
 require_once OPTRION_DIR . 'includes/class-tracker.php';
