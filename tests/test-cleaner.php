@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Optrion\Tests;
 
 use Optrion\Cleaner;
+use Optrion\Quarantine;
 use Optrion\Schema;
 use WP_UnitTestCase;
 
@@ -70,6 +71,49 @@ class CleanerTest extends WP_UnitTestCase {
 		$this->assertSame( 1, $result['skipped'] );
 		$this->assertNotEmpty( $result['errors'] );
 		$this->assertArrayNotHasKey( 'backup_path', $result );
+	}
+
+	/**
+	 * Non-canonical core spellings (uppercase / trailing whitespace) are also
+	 * skipped, since the DB's collation would match the stored row even though
+	 * a strict PHP compare would not.
+	 */
+	public function test_delete_skips_core_options_with_non_canonical_spelling(): void {
+		$result = Cleaner::delete( array( 'SITEURL', 'blogname ', 'Home' ) );
+		$this->assertSame( 0, $result['deleted'] );
+		$this->assertSame( 3, $result['skipped'] );
+	}
+
+	/**
+	 * Optrion's own plugin-option namespace is off-limits to the cleaner so
+	 * the plugin cannot delete its own state through the same endpoint.
+	 */
+	public function test_delete_skips_optrion_internal_namespace(): void {
+		update_option( 'optrion_sampling_rate', '50' );
+		$db_version_before = get_option( 'optrion_db_version' );
+
+		$result = Cleaner::delete(
+			array( 'optrion_sampling_rate', 'OPTRION_DB_VERSION' )
+		);
+		$this->assertSame( 0, $result['deleted'] );
+		$this->assertSame( 2, $result['skipped'] );
+		$this->assertSame( '50', get_option( 'optrion_sampling_rate' ) );
+		$this->assertSame( $db_version_before, get_option( 'optrion_db_version' ) );
+	}
+
+	/**
+	 * Quarantine-managed rows are owned by the manifest table's lifecycle and
+	 * must not be deleted through the generic delete endpoint. This keeps the
+	 * restore path usable and prevents orphaned manifest entries.
+	 */
+	public function test_delete_skips_quarantine_rename_namespace(): void {
+		$renamed = Quarantine::RENAME_PREFIX . 'simulated_row';
+		add_option( $renamed, 'held-value', '', 'no' );
+
+		$result = Cleaner::delete( array( $renamed ) );
+		$this->assertSame( 0, $result['deleted'] );
+		$this->assertSame( 1, $result['skipped'] );
+		$this->assertSame( 'held-value', get_option( $renamed ) );
 	}
 
 	/**

@@ -44,6 +44,36 @@ class QuarantineTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The already-quarantined check matches the DB collation, so a
+	 * non-canonical spelling of the rename prefix is also refused.
+	 */
+	public function test_is_quarantinable_rejects_non_canonical_rename_prefix(): void {
+		$this->assertFalse(
+			Quarantine::is_quarantinable( strtoupper( Quarantine::RENAME_PREFIX ) . 'foo' )
+		);
+		$this->assertFalse(
+			Quarantine::is_quarantinable( Quarantine::RENAME_PREFIX . 'foo ' )
+		);
+	}
+
+	/**
+	 * Core options are refused in any canonical spelling.
+	 */
+	public function test_is_quarantinable_rejects_core_options_case_insensitively(): void {
+		$this->assertFalse( Quarantine::is_quarantinable( 'SITEURL' ) );
+		$this->assertFalse( Quarantine::is_quarantinable( 'BlogName ' ) );
+	}
+
+	/**
+	 * Optrion's own plugin options are out of scope for quarantine so the
+	 * plugin cannot be made to rename its own configuration row.
+	 */
+	public function test_is_quarantinable_rejects_optrion_internal_namespace(): void {
+		$this->assertFalse( Quarantine::is_quarantinable( 'optrion_sampling_rate' ) );
+		$this->assertFalse( Quarantine::is_quarantinable( 'OPTRION_DB_VERSION' ) );
+	}
+
+	/**
 	 * Quarantining renames the row and inserts a manifest entry.
 	 */
 	public function test_quarantine_renames_and_records_manifest(): void {

@@ -443,10 +443,7 @@ final class Quarantine {
 		if ( strlen( $option_name ) > self::MAX_ORIGINAL_LENGTH ) {
 			return false;
 		}
-		if ( 0 === strpos( $option_name, self::RENAME_PREFIX ) ) {
-			return false;
-		}
-		if ( CoreOptions::contains( $option_name ) ) {
+		if ( ProtectedOptions::is_protected( $option_name ) ) {
 			return false;
 		}
 		return true;
@@ -679,14 +676,17 @@ final class Quarantine {
 		if ( '' === $option_name ) {
 			return __( 'Option name is empty.', 'optrion' );
 		}
-		if ( 0 === strpos( $option_name, self::RENAME_PREFIX ) ) {
+		if ( ProtectedOptions::is_quarantine_rename( $option_name ) ) {
 			return __( 'Option is already quarantined.', 'optrion' );
 		}
 		if ( strlen( $option_name ) > self::MAX_ORIGINAL_LENGTH ) {
 			return __( 'Option name is too long to safely quarantine.', 'optrion' );
 		}
-		if ( CoreOptions::contains( $option_name ) ) {
+		if ( ProtectedOptions::is_core( $option_name ) ) {
 			return __( 'WordPress core options cannot be quarantined.', 'optrion' );
+		}
+		if ( ProtectedOptions::is_internal( $option_name ) ) {
+			return __( 'Optrion internal options cannot be quarantined.', 'optrion' );
 		}
 		return __( 'Option cannot be quarantined.', 'optrion' );
 	}

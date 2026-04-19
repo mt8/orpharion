@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Optrion 1.0.2\n"
+"Project-Id-Version: Optrion 1.0.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/optrion\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-19T21:27:21+00:00\n"
+"POT-Creation-Date: 2026-04-19T22:04:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: optrion\n"
@@ -45,16 +45,8 @@ msgstr ""
 msgid "Optrion admin UI build not found. Run `npm run build` in the plugin directory."
 msgstr ""
 
-#. translators: %s: option_name that was protected.
-#. translators: %s: option name.
-#: includes/class-cleaner.php:48
-#: includes/class-importer.php:228
-#, php-format
-msgid "Skipped core option: %s"
-msgstr ""
-
 #. translators: %s: option_name that could not be deleted.
-#: includes/class-cleaner.php:77
+#: includes/class-cleaner.php:74
 #, php-format
 msgid "Failed to delete %s."
 msgstr ""
@@ -90,18 +82,6 @@ msgstr ""
 msgid "Export payload has no options list."
 msgstr ""
 
-#. translators: %s: option name.
-#: includes/class-importer.php:235
-#, php-format
-msgid "Skipped quarantine-managed option: %s"
-msgstr ""
-
-#. translators: %s: option name.
-#: includes/class-importer.php:242
-#, php-format
-msgid "Skipped Optrion internal option: %s"
-msgstr ""
-
 #: includes/class-plugin.php:62
 msgid "Optrion is active."
 msgstr ""
@@ -112,6 +92,24 @@ msgstr ""
 
 #: includes/class-plugin.php:65
 msgid "Deactivate Optrion"
+msgstr ""
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:103
+#, php-format
+msgid "Skipped core option: %s"
+msgstr ""
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:110
+#, php-format
+msgid "Skipped quarantine-managed option: %s"
+msgstr ""
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:117
+#, php-format
+msgid "Skipped Optrion internal option: %s"
 msgstr ""
 
 #. translators: %d: maximum number of simultaneous quarantines.
@@ -154,27 +152,31 @@ msgstr ""
 msgid "Could not delete the quarantined option row."
 msgstr ""
 
-#: includes/class-quarantine.php:680
+#: includes/class-quarantine.php:677
 msgid "Option name is empty."
 msgstr ""
 
-#: includes/class-quarantine.php:683
+#: includes/class-quarantine.php:680
 msgid "Option is already quarantined."
 msgstr ""
 
-#: includes/class-quarantine.php:686
+#: includes/class-quarantine.php:683
 msgid "Option name is too long to safely quarantine."
 msgstr ""
 
-#: includes/class-quarantine.php:689
+#: includes/class-quarantine.php:686
 msgid "WordPress core options cannot be quarantined."
+msgstr ""
+
+#: includes/class-quarantine.php:689
+msgid "Optrion internal options cannot be quarantined."
 msgstr ""
 
 #: includes/class-quarantine.php:691
 msgid "Option cannot be quarantined."
 msgstr ""
 
-#: includes/class-rest-controller.php:346
+#: includes/class-rest-controller.php:348
 msgid "Option not found."
 msgstr ""
 

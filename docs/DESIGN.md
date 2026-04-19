@@ -260,6 +260,7 @@ Administrators who want a restore path take one explicit action before running a
 - Known WordPress core options have their delete button disabled, and the UI shows a lock icon.
 - The autoload total size before/after deletion is surfaced on the UI (e.g. "autoload payload 1.2 MB → 0.8 MB").
 - Admin confirmation dialog reminds the operator to export first if they need a restore path.
+- The destructive-module guards (`Cleaner`, `Quarantine`, `Importer`) and the main list's `NOT LIKE` filter are all derived from a single `ProtectedOptions` helper, which covers three categories: WordPress core options, Optrion's own plugin-option namespace (`optrion_*`), and the quarantine rename namespace (owned by the manifest table's lifecycle). Matching follows the `wp_options.option_name` collation semantics so a non-canonical spelling does not slip past the guard.
 
 ### 4.5 Quarantine module
 

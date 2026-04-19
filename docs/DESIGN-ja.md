@@ -260,6 +260,7 @@ Optrion は **`option_value` の内容をサーバーのファイルシステム
 - WordPress コアオプション（既知リスト）は削除ボタンを無効化し、UI にロックアイコンを表示
 - autoload 合計サイズの変動を削除前後で表示（「autoload データが 1.2MB → 0.8MB に削減」）
 - 削除確認ダイアログで「復元用コピーが必要なら先にエクスポートしてください」のリマインダーを表示
+- 破壊的モジュール（`Cleaner` / `Quarantine` / `Importer`）のガードと、メイン一覧の `NOT LIKE` フィルタは、すべて単一の `ProtectedOptions` ヘルパーに由来する。保護対象は WordPress コアオプション・Optrion 自身のプラグインオプション名前空間（`optrion_*`）・検疫リネーム名前空間（manifest テーブルが所有するライフサイクル）の 3 種。判定は `wp_options.option_name` の照合順序（case-insensitive、末尾空白を無視）に従うため、非正規な綴りでガードをすり抜けることはない
 
 ### 4.5 Quarantine（検疫モード）
 

@@ -15,27 +15,25 @@ msgstr ""
 "X-Domain: optrion\n"
 
 #. translators: %s: option_name that could not be deleted.
-#: includes/class-cleaner.php:77
+#: includes/class-cleaner.php:74
 #, php-format
 msgid "Failed to delete %s."
 msgstr "%s の削除に失敗しました。"
 
-#. translators: %s: option_name that was protected.
 #. translators: %s: option name.
-#: includes/class-cleaner.php:48
-#: includes/class-importer.php:228
+#: includes/class-protected-options.php:103
 #, php-format
 msgid "Skipped core option: %s"
 msgstr "コアオプションのためスキップしました: %s"
 
 #. translators: %s: option name.
-#: includes/class-importer.php:235
+#: includes/class-protected-options.php:110
 #, php-format
 msgid "Skipped quarantine-managed option: %s"
 msgstr "検疫が管理する名前空間のためスキップしました: %s"
 
 #. translators: %s: option name.
-#: includes/class-importer.php:242
+#: includes/class-protected-options.php:117
 #, php-format
 msgid "Skipped Optrion internal option: %s"
 msgstr "Optrion 内部オプションのためスキップしました: %s"
@@ -60,15 +58,15 @@ msgstr "オプションのリネームに失敗しました。"
 msgid "Option cannot be quarantined."
 msgstr "このオプションは検疫できません。"
 
-#: includes/class-quarantine.php:683
+#: includes/class-quarantine.php:680
 msgid "Option is already quarantined."
 msgstr "既に検疫されています。"
 
-#: includes/class-quarantine.php:680
+#: includes/class-quarantine.php:677
 msgid "Option name is empty."
 msgstr "オプション名が空です。"
 
-#: includes/class-quarantine.php:686
+#: includes/class-quarantine.php:683
 msgid "Option name is too long to safely quarantine."
 msgstr "オプション名が長すぎるため、安全に検疫できません。"
 
@@ -92,7 +90,7 @@ msgstr "検疫の上限に達しました (有効件数: %d)。"
 msgid "Quarantine manifest row not found."
 msgstr "検疫マニフェストの行が見つかりません。"
 
-#: includes/class-quarantine.php:689
+#: includes/class-quarantine.php:686
 msgid "WordPress core options cannot be quarantined."
 msgstr "WordPress コアオプションは検疫できません。"
 
@@ -121,7 +119,7 @@ msgstr "%s の追加に失敗しました。"
 msgid "Failed to overwrite %s."
 msgstr "%s の上書きに失敗しました。"
 
-#: includes/class-rest-controller.php:346
+#: includes/class-rest-controller.php:348
 msgid "Option not found."
 msgstr "オプションが見つかりません。"
 
@@ -449,3 +447,7 @@ msgstr "1 ページあたりの件数"
 #, js-format
 msgid "%d / page"
 msgstr "%d 件／ページ"
+
+#: includes/class-quarantine.php:689
+msgid "Optrion internal options cannot be quarantined."
+msgstr "Optrion の内部オプションは検疫できません。"
