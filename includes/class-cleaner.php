@@ -41,13 +41,10 @@ final class Cleaner {
 		$skipped   = 0;
 		$errors    = array();
 		foreach ( $option_names as $name ) {
-			if ( CoreOptions::contains( $name ) ) {
+			$reason = ProtectedOptions::protected_reason( $name );
+			if ( null !== $reason ) {
 				++$skipped;
-				$errors[] = sprintf(
-					/* translators: %s: option_name that was protected. */
-					__( 'Skipped core option: %s', 'optrion' ),
-					$name
-				);
+				$errors[] = $reason;
 				continue;
 			}
 			$deletable[] = $name;

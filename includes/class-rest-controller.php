@@ -257,10 +257,12 @@ final class Rest_Controller {
 		$params = array();
 		// Transients are managed by the Transient API and are out of scope for Optrion.
 		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
-		// Quarantined options have their own tab; hide them from the main list.
-		$where[] = "option_name NOT LIKE '\\_optrion\\_q\\_\\_%'";
-		// Optrion's own internal options are not useful to audit.
-		$where[] = "option_name NOT LIKE 'optrion\\_%'";
+		// Quarantine-managed rows and Optrion's own internal options are
+		// derived from the same `ProtectedOptions` source of truth used by
+		// the destructive modules.
+		foreach ( ProtectedOptions::not_like_fragments() as $fragment ) {
+			$where[] = $fragment;
+		}
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';

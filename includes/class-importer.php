@@ -57,7 +57,7 @@ final class Importer {
 				$summary['errors'][] = __( 'Entry missing option_name.', 'optrion' );
 				continue;
 			}
-			$protected = self::protected_reason( $name );
+			$protected = ProtectedOptions::protected_reason( $name );
 			if ( null !== $protected ) {
 				++$summary['skip'];
 				$summary['errors'][] = $protected;
@@ -104,7 +104,7 @@ final class Importer {
 				$summary['errors'][] = __( 'Entry missing option_name.', 'optrion' );
 				continue;
 			}
-			$protected = self::protected_reason( $name );
+			$protected = ProtectedOptions::protected_reason( $name );
 			if ( null !== $protected ) {
 				++$summary['skipped'];
 				$summary['errors'][] = $protected;
@@ -202,47 +202,5 @@ final class Importer {
 			return new WP_Error( 'optrion_invalid_payload', __( 'Export payload has no options list.', 'optrion' ) );
 		}
 		return array( 'options' => $decoded['options'] );
-	}
-
-	/**
-	 * Returns a human-readable reason if the option name is protected from
-	 * import, or null if the entry is allowed.
-	 *
-	 * The importer mirrors the same "do not touch" set as `Cleaner::delete()`,
-	 * and additionally refuses Optrion's own internal namespace
-	 * (`optrion_*`) and the quarantine rename namespace (which is owned by
-	 * the manifest table, not by the importer).
-	 *
-	 * @param string $name option_name from the payload entry.
-	 */
-	private static function protected_reason( string $name ): ?string {
-		// Normalize to the same shape the DB will actually compare at query
-		// time (utf8mb4 collation is case-insensitive; VARCHAR WHERE ignores
-		// trailing spaces). Guard decisions must see the same string the row
-		// lookup will match, otherwise a non-canonical spelling slips past
-		// the check while still hitting the real row on INSERT/UPDATE.
-		$normalized = strtolower( rtrim( $name ) );
-		if ( CoreOptions::contains( $normalized ) ) {
-			return sprintf(
-				/* translators: %s: option name. */
-				__( 'Skipped core option: %s', 'optrion' ),
-				$name
-			);
-		}
-		if ( 0 === strpos( $normalized, Quarantine::RENAME_PREFIX ) ) {
-			return sprintf(
-				/* translators: %s: option name. */
-				__( 'Skipped quarantine-managed option: %s', 'optrion' ),
-				$name
-			);
-		}
-		if ( 0 === strpos( $normalized, 'optrion_' ) ) {
-			return sprintf(
-				/* translators: %s: option name. */
-				__( 'Skipped Optrion internal option: %s', 'optrion' ),
-				$name
-			);
-		}
-		return null;
 	}
 }
