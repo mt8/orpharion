@@ -2,12 +2,12 @@
 /**
  * Known WordPress core option names.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -154,7 +154,7 @@ final class CoreOptions {
 		 *
 		 * @param string[] $list Canonical option names considered core.
 		 */
-		$list = apply_filters( 'optrion_core_options', self::LIST );
+		$list = apply_filters( 'orpharion_core_options', self::LIST );
 
 		return array_values( array_unique( array_map( 'strval', $list ) ) );
 	}

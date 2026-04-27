@@ -2,20 +2,20 @@
 /**
  * Core options registry tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\CoreOptions;
+use Orpharion\CoreOptions;
 use WP_UnitTestCase;
 
 /**
  * Verifies behavior of the known core options registry.
  *
- * @coversDefaultClass \Optrion\CoreOptions
+ * @coversDefaultClass \Orpharion\CoreOptions
  */
 class CoreOptionsTest extends WP_UnitTestCase {
 
@@ -84,12 +84,12 @@ class CoreOptionsTest extends WP_UnitTestCase {
 			$names[] = 'my_mu_plugin_sentinel';
 			return $names;
 		};
-		add_filter( 'optrion_core_options', $filter );
+		add_filter( 'orpharion_core_options', $filter );
 
 		try {
 			$this->assertTrue( CoreOptions::contains( 'my_mu_plugin_sentinel' ) );
 		} finally {
-			remove_filter( 'optrion_core_options', $filter );
+			remove_filter( 'orpharion_core_options', $filter );
 		}
 	}
 }

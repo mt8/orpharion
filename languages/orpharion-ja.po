@@ -1,0 +1,459 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Orpharion 1.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/orpharion\n"
+"POT-Creation-Date: 2026-04-27T01:38:47+00:00\n"
+"PO-Revision-Date: 2026-04-17T01:51:06+00:00\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: manual\n"
+"X-Domain: orpharion\n"
+
+#. Plugin Name of the plugin
+#: orpharion.php includes/class-admin-page.php:48
+#: includes/class-admin-page.php:49 includes/class-admin-page.php:96
+msgid "Orpharion"
+msgstr "Orpharion"
+
+#. Plugin URI of the plugin
+#: orpharion.php
+msgid "https://github.com/mt8/orpharion"
+msgstr "https://github.com/mt8/orpharion"
+
+#. Description of the plugin
+#: orpharion.php
+msgid ""
+"Track which plugin or theme accesses each wp_options row, then quarantine or "
+"clean orphans."
+msgstr ""
+"各 wp_options 行にアクセスするプラグイン／テーマを追跡し、孤立したオプション"
+"を検疫または削除します。"
+
+#. Author of the plugin
+#: orpharion.php
+msgid "mt8biz"
+msgstr "mt8biz"
+
+#: includes/class-admin-page.php:99
+msgid "Loading Orpharion…"
+msgstr "Orpharion を読み込み中…"
+
+#: includes/class-admin-page.php:121
+msgid ""
+"Orpharion admin UI build not found. Run `npm run build` in the plugin "
+"directory."
+msgstr ""
+"Orpharion の管理 UI ビルドが見つかりません。プラグインディレクトリで `npm "
+"run build` を実行してください。"
+
+#. translators: %s: option_name that could not be deleted.
+#: includes/class-cleaner.php:74
+#, php-format
+msgid "Failed to delete %s."
+msgstr "%s の削除に失敗しました。"
+
+#: includes/class-importer.php:57 includes/class-importer.php:104
+msgid "Entry missing option_name."
+msgstr "option_name が欠落しているエントリです。"
+
+#. translators: %s: option name.
+#: includes/class-importer.php:134
+#, php-format
+msgid "Failed to insert %s."
+msgstr "%s の追加に失敗しました。"
+
+#. translators: %s: option name.
+#: includes/class-importer.php:164
+#, php-format
+msgid "Failed to overwrite %s."
+msgstr "%s の上書きに失敗しました。"
+
+#. translators: %s: human-readable size limit.
+#: includes/class-importer.php:191
+#, php-format
+msgid "Import payload exceeds the %s size limit."
+msgstr "インポートデータが上限サイズ %s を超えています。"
+
+#: includes/class-importer.php:199
+msgid "Export payload is not valid JSON."
+msgstr "エクスポートデータが有効な JSON ではありません。"
+
+#: includes/class-importer.php:202
+msgid "Export payload has no options list."
+msgstr "エクスポートデータに options リストがありません。"
+
+#: includes/class-plugin.php:62
+msgid "Orpharion is active."
+msgstr "Orpharion が有効化されています。"
+
+#: includes/class-plugin.php:63
+msgid ""
+"Orpharion instruments every get_option() call to attribute reads to the "
+"right plugin or theme. This adds measurable overhead to admin page loads and "
+"is intended for short-term audits only — please deactivate the plugin once "
+"your current cleanup round is complete."
+msgstr ""
+"Orpharion は get_option() のすべての呼び出しを追跡し、呼び出し元のプラグイン"
+"／テーマを特定します。管理画面の読み込みに無視できないオーバーヘッドが発生す"
+"るため、短期間の棚卸し用途にのみ使用する設計です。クリーンアップが一段落した"
+"らプラグインを無効化してください。"
+
+#: includes/class-plugin.php:65
+msgid "Deactivate Orpharion"
+msgstr "Orpharion を無効化"
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:103
+#, php-format
+msgid "Skipped core option: %s"
+msgstr "コアオプションのためスキップしました: %s"
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:110
+#, php-format
+msgid "Skipped quarantine-managed option: %s"
+msgstr "検疫が管理する名前空間のためスキップしました: %s"
+
+#. translators: %s: option name.
+#: includes/class-protected-options.php:117
+#, php-format
+msgid "Skipped Orpharion internal option: %s"
+msgstr "Orpharion 内部オプションのためスキップしました: %s"
+
+#. translators: %d: maximum number of simultaneous quarantines.
+#: includes/class-quarantine.php:124
+#, php-format
+msgid "Quarantine limit reached (%d active)."
+msgstr "検疫の上限に達しました (有効件数: %d)。"
+
+#: includes/class-quarantine.php:136
+msgid "Option not found in wp_options."
+msgstr "wp_options にオプションが見つかりません。"
+
+#: includes/class-quarantine.php:155
+msgid "Could not rename the option row."
+msgstr "オプションのリネームに失敗しました。"
+
+#: includes/class-quarantine.php:205
+msgid "Could not record the quarantine manifest."
+msgstr "検疫マニフェストの記録に失敗しました。"
+
+#: includes/class-quarantine.php:235 includes/class-quarantine.php:311
+msgid "Quarantine manifest row not found."
+msgstr "検疫マニフェストの行が見つかりません。"
+
+#: includes/class-quarantine.php:238 includes/class-quarantine.php:314
+msgid "Quarantine entry is not active."
+msgstr "検疫エントリは有効ではありません。"
+
+#: includes/class-quarantine.php:275
+msgid "Could not rename the option row back."
+msgstr "オプションの名前を元に戻せませんでした。"
+
+#: includes/class-quarantine.php:321
+msgid "This option is still being accessed. Restore it instead of deleting."
+msgstr "このオプションはまだアクセスされています。削除せず復元してください。"
+
+#: includes/class-quarantine.php:335
+msgid "Could not delete the quarantined option row."
+msgstr "検疫中オプションの本削除に失敗しました。"
+
+#: includes/class-quarantine.php:677
+msgid "Option name is empty."
+msgstr "オプション名が空です。"
+
+#: includes/class-quarantine.php:680
+msgid "Option is already quarantined."
+msgstr "既に検疫されています。"
+
+#: includes/class-quarantine.php:683
+msgid "Option name is too long to safely quarantine."
+msgstr "オプション名が長すぎるため、安全に検疫できません。"
+
+#: includes/class-quarantine.php:686
+msgid "WordPress core options cannot be quarantined."
+msgstr "WordPress コアオプションは検疫できません。"
+
+#: includes/class-quarantine.php:689
+msgid "Orpharion internal options cannot be quarantined."
+msgstr "Orpharion の内部オプションは検疫できません。"
+
+#: includes/class-quarantine.php:691
+msgid "Option cannot be quarantined."
+msgstr "このオプションは検疫できません。"
+
+#: includes/class-rest-controller.php:348
+msgid "Option not found."
+msgstr "オプションが見つかりません。"
+
+#: src/App.js:14
+msgid "Dashboard"
+msgstr ""
+
+#: src/App.js:15
+msgid "Options"
+msgstr ""
+
+#: src/App.js:16
+msgid "Quarantine"
+msgstr ""
+
+#: src/App.js:17 src/tabs/Import.jsx:64
+msgid "Import"
+msgstr "インポート"
+
+#: src/index.js:22
+msgid "Orpharion mount node not found."
+msgstr ""
+
+#: src/tabs/Dashboard.jsx:25
+msgid "Total options"
+msgstr "オプション総数"
+
+#: src/tabs/Dashboard.jsx:26
+msgid "Autoload payload"
+msgstr "自動読み込みサイズ"
+
+#: src/tabs/Import.jsx:55
+msgid "Overwrite existing rows"
+msgstr "既存行を上書きする"
+
+#: src/tabs/Import.jsx:61
+msgid "Dry run"
+msgstr "ドライラン"
+
+#: src/tabs/Import.jsx:71
+msgid "Preview — add: %1$d, overwrite: %2$d"
+msgstr "プレビュー — 追加: %1$d 件、上書き: %2$d 件"
+
+#: src/tabs/Import.jsx:80
+msgid "Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d"
+msgstr "インポート完了 — 追加: %1$d 件、上書き: %2$d 件、スキップ: %3$d 件"
+
+#: src/tabs/OptionsList.jsx:31
+msgid "option_name"
+msgstr "option_name"
+
+#: src/tabs/OptionsList.jsx:32 src/tabs/OptionsList.jsx:331
+#: src/tabs/Quarantine.jsx:92
+msgid "Accessor"
+msgstr "アクセス元"
+
+#: src/tabs/OptionsList.jsx:33
+msgid "Autoload"
+msgstr "自動読み込み"
+
+#: src/tabs/OptionsList.jsx:34
+msgid "Size"
+msgstr "サイズ"
+
+#: src/tabs/OptionsList.jsx:35 src/tabs/Quarantine.jsx:90
+msgid "Last accessed"
+msgstr "最終読み込み"
+
+#. translators: %d: number of options about to be deleted.
+#: src/tabs/OptionsList.jsx:164
+msgid ""
+"Permanently delete %d option(s)?\n"
+"\n"
+"Orpharion does NOT write a server-side backup. If you want a restore copy, "
+"cancel this dialog, use \"Export selected\" to download a JSON file to your "
+"machine, then come back and delete."
+msgstr ""
+"%d 件のオプションを完全に削除しますか？\n"
+"\n"
+"Orpharion はサーバー側にバックアップを書き出しません。復元用のコピーが必要な"
+"場合は、一度キャンセルし、「選択項目をエクスポート」で JSON ファイルをお手元"
+"にダウンロードしてから、改めて削除してください。"
+
+#. translators: %d: number of deleted options.
+#: src/tabs/OptionsList.jsx:180
+msgid "%d option(s) deleted."
+msgstr "%d 件のオプションを削除しました。"
+
+#. translators: %d: number of quarantined options.
+#: src/tabs/OptionsList.jsx:195
+msgid "%d option(s) quarantined."
+msgstr "%d 件のオプションを検疫しました。"
+
+#. translators: %d: number of exported options.
+#: src/tabs/OptionsList.jsx:220
+msgid "%d option(s) exported."
+msgstr "%d 件のオプションをエクスポートしました。"
+
+#: src/tabs/OptionsList.jsx:260
+msgid "Accessor plugin/theme is currently inactive."
+msgstr "アクセス元のプラグイン／テーマは現在無効化されています。"
+
+#: src/tabs/OptionsList.jsx:265
+msgid "inactive"
+msgstr "無効"
+
+#: src/tabs/OptionsList.jsx:271
+msgid "WordPress core option — cannot be selected or deleted."
+msgstr "WordPress コアオプション — 選択・削除できません。"
+
+#: src/tabs/OptionsList.jsx:276
+msgid "protected"
+msgstr "保護"
+
+#: src/tabs/OptionsList.jsx:291
+msgid "Quarantine selected"
+msgstr "選択項目を検疫"
+
+#: src/tabs/OptionsList.jsx:298
+msgid "Export selected"
+msgstr "選択項目をエクスポート"
+
+#: src/tabs/OptionsList.jsx:306
+msgid "Delete selected"
+msgstr "選択項目を削除"
+
+#. translators: 1: selected rows, 2: matching rows.
+#: src/tabs/OptionsList.jsx:311
+msgid "%1$d selected · %2$d matches"
+msgstr "%1$d 件選択中 · %2$d 件該当"
+
+#: src/tabs/OptionsList.jsx:323
+msgid "Search"
+msgstr "検索"
+
+#: src/tabs/OptionsList.jsx:334
+msgid "All"
+msgstr "すべて"
+
+#: src/tabs/OptionsList.jsx:347
+msgid "Inactive accessors only"
+msgstr "無効のアクセス元"
+
+#: src/tabs/OptionsList.jsx:355
+msgid "Autoload only"
+msgstr "自動読み込みのみ"
+
+#: src/tabs/OptionsList.jsx:363
+msgid "Show WordPress-Core"
+msgstr "WordPress コアのオプションを表示"
+
+#: src/tabs/OptionsList.jsx:393
+msgid "Select all options on this page"
+msgstr "このページのすべてのオプションを選択"
+
+#. translators: %s: column heading label (e.g. "Size").
+#: src/tabs/OptionsList.jsx:408
+msgid "Sort by %s"
+msgstr "%s で並び替え"
+
+#: src/tabs/OptionsList.jsx:441
+msgid "WordPress core option — protected"
+msgstr "WordPress コアオプション — 保護されています"
+
+#: src/tabs/OptionsList.jsx:459
+msgid "autoload"
+msgstr "自動読み込み"
+
+#: src/tabs/OptionsList.jsx:487
+msgid "Previous"
+msgstr "前へ"
+
+#: src/tabs/OptionsList.jsx:491
+msgid "Page"
+msgstr "ページ"
+
+#: src/tabs/OptionsList.jsx:506
+msgid "Jump to page"
+msgstr "ページ番号でジャンプ"
+
+#. translators: %d: total number of pages.
+#: src/tabs/OptionsList.jsx:512
+msgid "of %d"
+msgstr "／ %d ページ"
+
+#: src/tabs/OptionsList.jsx:522
+msgid "Next"
+msgstr "次へ"
+
+#: src/tabs/OptionsList.jsx:526
+msgid "Per page"
+msgstr "1 ページあたりの件数"
+
+#. translators: %d: rows per page.
+#: src/tabs/OptionsList.jsx:532
+msgid "%d / page"
+msgstr "%d 件／ページ"
+
+#: src/tabs/Quarantine.jsx:31
+msgid "Option restored."
+msgstr "オプションを復元しました。"
+
+#: src/tabs/Quarantine.jsx:39
+msgid "Permanently delete this quarantined option?"
+msgstr "検疫中のこのオプションを本削除しますか？"
+
+#: src/tabs/Quarantine.jsx:49
+msgid "Option permanently deleted."
+msgstr "オプションを本削除しました。"
+
+#: src/tabs/Quarantine.jsx:67
+msgid "Status"
+msgstr "状態"
+
+#: src/tabs/Quarantine.jsx:70
+msgid "Active"
+msgstr "検疫中"
+
+#: src/tabs/Quarantine.jsx:72
+msgid "Restored"
+msgstr "復元済み"
+
+#: src/tabs/Quarantine.jsx:75
+msgid "Deleted"
+msgstr "削除済み"
+
+#: src/tabs/Quarantine.jsx:87
+msgid "Original name"
+msgstr "元の名前"
+
+#: src/tabs/Quarantine.jsx:88
+msgid "Quarantined at"
+msgstr "検疫日時"
+
+#: src/tabs/Quarantine.jsx:89
+msgid "Expires at"
+msgstr "期限"
+
+#: src/tabs/Quarantine.jsx:91
+msgid "Access count"
+msgstr "アクセス回数"
+
+#: src/tabs/Quarantine.jsx:93
+msgid "Actions"
+msgstr "操作"
+
+#: src/tabs/Quarantine.jsx:104
+msgid ""
+"This option was accessed after quarantine. Restore it to keep the site "
+"working; auto-expiry is paused until you restore."
+msgstr ""
+"検疫後にアクセスがありました。サイト動作維持のため復元してください。復元され"
+"るまで自動期限切れは一時停止されます。"
+
+#: src/tabs/Quarantine.jsx:109
+msgid "in use — restore"
+msgstr "使用中・要復元"
+
+#: src/tabs/Quarantine.jsx:145
+msgid "Restore"
+msgstr "復元"
+
+#: src/tabs/Quarantine.jsx:154
+msgid "Delete"
+msgstr "削除"
+
+#: src/tabs/Quarantine.jsx:168
+msgid "No entries."
+msgstr "該当する項目はありません。"

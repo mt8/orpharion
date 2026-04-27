@@ -2,19 +2,19 @@
 /**
  * Import module.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Parses an Optrion export JSON payload and inserts / overwrites wp_options rows.
+ * Parses an Orpharion export JSON payload and inserts / overwrites wp_options rows.
  *
  * See docs/DESIGN.md §4.3.
  */
@@ -33,7 +33,7 @@ final class Importer {
 	/**
 	 * Performs a dry-run analysis of the payload.
 	 *
-	 * @param string $json Raw JSON string from an Optrion export.
+	 * @param string $json Raw JSON string from an Orpharion export.
 	 *
 	 * @return array{add:int,overwrite:int,skip:int,errors:string[]}|WP_Error
 	 */
@@ -54,7 +54,7 @@ final class Importer {
 		foreach ( $parsed['options'] as $entry ) {
 			$name = (string) ( $entry['option_name'] ?? '' );
 			if ( '' === $name ) {
-				$summary['errors'][] = __( 'Entry missing option_name.', 'optrion' );
+				$summary['errors'][] = __( 'Entry missing option_name.', 'orpharion' );
 				continue;
 			}
 			$protected = ProtectedOptions::protected_reason( $name );
@@ -101,7 +101,7 @@ final class Importer {
 		foreach ( $parsed['options'] as $entry ) {
 			$name = (string) ( $entry['option_name'] ?? '' );
 			if ( '' === $name ) {
-				$summary['errors'][] = __( 'Entry missing option_name.', 'optrion' );
+				$summary['errors'][] = __( 'Entry missing option_name.', 'orpharion' );
 				continue;
 			}
 			$protected = ProtectedOptions::protected_reason( $name );
@@ -131,7 +131,7 @@ final class Importer {
 				if ( false === $inserted ) {
 					$summary['errors'][] = sprintf(
 						/* translators: %s: option name. */
-						__( 'Failed to insert %s.', 'optrion' ),
+						__( 'Failed to insert %s.', 'orpharion' ),
 						$name
 					);
 					continue;
@@ -161,7 +161,7 @@ final class Importer {
 			if ( false === $updated ) {
 				$summary['errors'][] = sprintf(
 					/* translators: %s: option name. */
-					__( 'Failed to overwrite %s.', 'optrion' ),
+					__( 'Failed to overwrite %s.', 'orpharion' ),
 					$name
 				);
 				continue;
@@ -185,10 +185,10 @@ final class Importer {
 	private static function parse( string $json ) {
 		if ( strlen( $json ) > self::MAX_PAYLOAD_BYTES ) {
 			return new WP_Error(
-				'optrion_payload_too_large',
+				'orpharion_payload_too_large',
 				sprintf(
 					/* translators: %s: human-readable size limit. */
-					__( 'Import payload exceeds the %s size limit.', 'optrion' ),
+					__( 'Import payload exceeds the %s size limit.', 'orpharion' ),
 					size_format( self::MAX_PAYLOAD_BYTES )
 				)
 			);
@@ -196,10 +196,10 @@ final class Importer {
 
 		$decoded = json_decode( $json, true, self::MAX_JSON_DEPTH );
 		if ( ! is_array( $decoded ) ) {
-			return new WP_Error( 'optrion_invalid_json', __( 'Export payload is not valid JSON.', 'optrion' ) );
+			return new WP_Error( 'orpharion_invalid_json', __( 'Export payload is not valid JSON.', 'orpharion' ) );
 		}
 		if ( ! isset( $decoded['options'] ) || ! is_array( $decoded['options'] ) ) {
-			return new WP_Error( 'optrion_invalid_payload', __( 'Export payload has no options list.', 'optrion' ) );
+			return new WP_Error( 'orpharion_invalid_payload', __( 'Export payload has no options list.', 'orpharion' ) );
 		}
 		return array( 'options' => $decoded['options'] );
 	}

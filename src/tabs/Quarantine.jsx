@@ -28,7 +28,7 @@ const Quarantine = () => {
 	const restore = ( id ) => {
 		api.restoreQuarantine( [ id ] )
 			.then( () => {
-				setNotice( { type: 'success', message: __( 'Option restored.', 'optrion' ) } );
+				setNotice( { type: 'success', message: __( 'Option restored.', 'orpharion' ) } );
 				load();
 			} )
 			.catch( ( e ) => setNotice( { type: 'error', message: e.message || String( e ) } ) );
@@ -38,7 +38,7 @@ const Quarantine = () => {
 			! window.confirm(
 				__(
 					'Permanently delete this quarantined option?',
-					'optrion'
+					'orpharion'
 				)
 			)
 		) {
@@ -46,14 +46,14 @@ const Quarantine = () => {
 		}
 		api.deleteQuarantine( [ id ] )
 			.then( () => {
-				setNotice( { type: 'success', message: __( 'Option permanently deleted.', 'optrion' ) } );
+				setNotice( { type: 'success', message: __( 'Option permanently deleted.', 'orpharion' ) } );
 				load();
 			} )
 			.catch( ( e ) => setNotice( { type: 'error', message: e.message || String( e ) } ) );
 	};
 
 	return (
-		<div className="optrion-quarantine">
+		<div className="orpharion-quarantine">
 			{ notice && (
 				<Notice
 					status={ notice.type }
@@ -64,33 +64,33 @@ const Quarantine = () => {
 				</Notice>
 			) }
 			<SelectControl
-				label={ __( 'Status', 'optrion' ) }
+				label={ __( 'Status', 'orpharion' ) }
 				value={ status }
 				options={ [
-					{ label: __( 'Active', 'optrion' ), value: 'active' },
+					{ label: __( 'Active', 'orpharion' ), value: 'active' },
 					{
-						label: __( 'Restored', 'optrion' ),
+						label: __( 'Restored', 'orpharion' ),
 						value: 'restored',
 					},
-					{ label: __( 'Deleted', 'optrion' ), value: 'deleted' },
+					{ label: __( 'Deleted', 'orpharion' ), value: 'deleted' },
 				] }
 				onChange={ setStatus }
 			/>
-			{ error && <p className="optrion-error">{ error }</p> }
+			{ error && <p className="orpharion-error">{ error }</p> }
 			{ loading ? (
 				<Spinner />
 			) : (
-				<div className="optrion-table-scroll">
+				<div className="orpharion-table-scroll">
 				<table className="widefat striped">
 					<thead>
 						<tr>
-							<th>{ __( 'Original name', 'optrion' ) }</th>
-							<th>{ __( 'Quarantined at', 'optrion' ) }</th>
-							<th>{ __( 'Expires at', 'optrion' ) }</th>
-							<th>{ __( 'Last accessed', 'optrion' ) }</th>
-							<th>{ __( 'Access count', 'optrion' ) }</th>
-							<th>{ __( 'Accessor', 'optrion' ) }</th>
-							<th>{ __( 'Actions', 'optrion' ) }</th>
+							<th>{ __( 'Original name', 'orpharion' ) }</th>
+							<th>{ __( 'Quarantined at', 'orpharion' ) }</th>
+							<th>{ __( 'Expires at', 'orpharion' ) }</th>
+							<th>{ __( 'Last accessed', 'orpharion' ) }</th>
+							<th>{ __( 'Access count', 'orpharion' ) }</th>
+							<th>{ __( 'Accessor', 'orpharion' ) }</th>
+							<th>{ __( 'Actions', 'orpharion' ) }</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -100,13 +100,13 @@ const Quarantine = () => {
 									<code>{ row.original_name }</code>
 									{ row.still_accessed && (
 										<span
-											className="optrion-badge optrion-badge--warning"
+											className="orpharion-badge orpharion-badge--warning"
 											title={ __(
 												'This option was accessed after quarantine. Restore it to keep the site working; auto-expiry is paused until you restore.',
-												'optrion'
+												'orpharion'
 											) }
 										>
-											{ __( 'in use — restore', 'optrion' ) }
+											{ __( 'in use — restore', 'orpharion' ) }
 										</span>
 									) }
 								</td>
@@ -123,7 +123,7 @@ const Quarantine = () => {
 										<>
 											{ row.accessor_during_quarantine }
 											{ row.accessor_type_during_quarantine && (
-												<span className="optrion-accessor-type">
+												<span className="orpharion-accessor-type">
 													{ ' ' }
 													({ row.accessor_type_during_quarantine })
 												</span>
@@ -142,7 +142,7 @@ const Quarantine = () => {
 													restore( row.id )
 												}
 											>
-												{ __( 'Restore', 'optrion' ) }
+												{ __( 'Restore', 'orpharion' ) }
 											</Button>
 											{ ! row.still_accessed && (
 												<Button
@@ -153,7 +153,7 @@ const Quarantine = () => {
 												>
 													{ __(
 														'Delete',
-														'optrion'
+														'orpharion'
 													) }
 												</Button>
 											) }
@@ -165,7 +165,7 @@ const Quarantine = () => {
 						{ rows.length === 0 && (
 							<tr>
 								<td colSpan="7">
-									{ __( 'No entries.', 'optrion' ) }
+									{ __( 'No entries.', 'orpharion' ) }
 								</td>
 							</tr>
 						) }

@@ -1,13 +1,13 @@
 <?php
 /**
- * Optrion main plugin bootstrap class.
+ * Orpharion main plugin bootstrap class.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -51,7 +51,7 @@ final class Plugin {
 			return;
 		}
 
-		$plugin_file = plugin_basename( OPTRION_FILE );
+		$plugin_file = plugin_basename( ORPHARION_FILE );
 		$deactivate  = wp_nonce_url(
 			self_admin_url( 'plugins.php?action=deactivate&plugin=' . rawurlencode( $plugin_file ) ),
 			'deactivate-plugin_' . $plugin_file
@@ -59,10 +59,10 @@ final class Plugin {
 
 		printf(
 			'<div class="notice notice-warning"><p><strong>%1$s</strong> %2$s <a href="%3$s">%4$s</a></p></div>',
-			esc_html__( 'Optrion is active.', 'optrion' ),
-			esc_html__( 'Optrion instruments every get_option() call to attribute reads to the right plugin or theme. This adds measurable overhead to admin page loads and is intended for short-term audits only — please deactivate the plugin once your current cleanup round is complete.', 'optrion' ),
+			esc_html__( 'Orpharion is active.', 'orpharion' ),
+			esc_html__( 'Orpharion instruments every get_option() call to attribute reads to the right plugin or theme. This adds measurable overhead to admin page loads and is intended for short-term audits only — please deactivate the plugin once your current cleanup round is complete.', 'orpharion' ),
 			esc_url( $deactivate ),
-			esc_html__( 'Deactivate Optrion', 'optrion' )
+			esc_html__( 'Deactivate Orpharion', 'orpharion' )
 		);
 	}
 

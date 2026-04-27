@@ -1,13 +1,13 @@
 <?php
 /**
- * Schema installer for Optrion custom tables.
+ * Schema installer for Orpharion custom tables.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,7 +34,7 @@ final class Schema {
 	/**
 	 * Option key that stores the installed DB version.
 	 */
-	public const VERSION_OPTION = 'optrion_db_version';
+	public const VERSION_OPTION = 'orpharion_db_version';
 
 	/**
 	 * Returns the tracking table name (with site prefix).
@@ -109,11 +109,11 @@ final class Schema {
 		update_option( self::VERSION_OPTION, self::DB_VERSION, false );
 
 		/**
-		 * Fires after the Optrion schema has been installed or refreshed.
+		 * Fires after the Orpharion schema has been installed or refreshed.
 		 *
 		 * @param string $db_version The schema version that was installed.
 		 */
-		do_action( 'optrion_schema_installed', self::DB_VERSION );
+		do_action( 'orpharion_schema_installed', self::DB_VERSION );
 	}
 
 	/**

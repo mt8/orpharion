@@ -1,13 +1,13 @@
 <?php
 /**
- * WP-CLI subcommands for Optrion.
+ * WP-CLI subcommands for Orpharion.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 use WP_CLI;
 use WP_CLI\Utils;
@@ -19,7 +19,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 }
 
 /**
- * Wraps the plugin's domain modules as `wp optrion <subcommand>` entries.
+ * Wraps the plugin's domain modules as `wp orpharion <subcommand>` entries.
  */
 final class CLI_Command {
 
@@ -175,7 +175,7 @@ final class CLI_Command {
 	}
 
 	/**
-	 * Import an Optrion JSON export.
+	 * Import an Orpharion JSON export.
 	 *
 	 * ## OPTIONS
 	 *
@@ -237,8 +237,8 @@ final class CLI_Command {
 	/**
 	 * Delete options by explicit names or by accessor-state filter.
 	 *
-	 * Optrion does not write a server-side backup. If a restore path is
-	 * needed, run `wp optrion export ...` first and keep the resulting
+	 * Orpharion does not write a server-side backup. If a restore path is
+	 * needed, run `wp orpharion export ...` first and keep the resulting
 	 * JSON somewhere you control. The `--i-have-a-backup` flag is a
 	 * mandatory acknowledgment that the operator has taken care of
 	 * that step themselves.
@@ -256,7 +256,7 @@ final class CLI_Command {
 	 *
 	 * [--i-have-a-backup]
 	 * : Required. Confirms that the operator has exported the target
-	 *   rows beforehand; Optrion will not create a server-side backup.
+	 *   rows beforehand; Orpharion will not create a server-side backup.
 	 *
 	 * [--yes]
 	 * : Skip the confirmation prompt.
@@ -267,7 +267,7 @@ final class CLI_Command {
 	public function clean( array $args, array $assoc_args ): void {
 		unset( $args );
 		if ( empty( $assoc_args['i-have-a-backup'] ) ) {
-			WP_CLI::error( 'Refusing to delete without --i-have-a-backup. Run `wp optrion export` first and re-run this command with the acknowledgment flag.' );
+			WP_CLI::error( 'Refusing to delete without --i-have-a-backup. Run `wp orpharion export` first and re-run this command with the acknowledgment flag.' );
 		}
 		$names = isset( $assoc_args['names'] ) ? array_filter( array_map( 'trim', explode( ',', (string) $assoc_args['names'] ) ) ) : array();
 		if ( empty( $names ) ) {
@@ -404,9 +404,9 @@ final class CLI_Command {
 		// Transients are managed by the Transient API and are out of scope.
 		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
 		// Quarantined options are managed separately.
-		$where[] = "option_name NOT LIKE '\\_optrion\\_q\\_\\_%'";
-		// Optrion's own internal options are not useful to audit.
-		$where[] = "option_name NOT LIKE 'optrion\\_%'";
+		$where[] = "option_name NOT LIKE '\\_orpharion\\_q\\_\\_%'";
+		// Orpharion's own internal options are not useful to audit.
+		$where[] = "option_name NOT LIKE 'orpharion\\_%'";
 		if ( '' !== $search ) {
 			$where[]  = 'option_name LIKE %s';
 			$params[] = '%' . $wpdb->esc_like( $search ) . '%';
@@ -455,4 +455,4 @@ final class CLI_Command {
 	}
 }
 
-WP_CLI::add_command( 'optrion', CLI_Command::class );
+WP_CLI::add_command( 'orpharion', CLI_Command::class );

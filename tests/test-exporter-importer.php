@@ -2,23 +2,23 @@
 /**
  * Export / Import module tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Exporter;
-use Optrion\Importer;
-use Optrion\Quarantine;
-use Optrion\Schema;
+use Orpharion\Exporter;
+use Orpharion\Importer;
+use Orpharion\Quarantine;
+use Orpharion\Schema;
 use WP_UnitTestCase;
 
 /**
  * Round-trips export → import, and covers dry-run and overwrite semantics.
  *
- * @coversDefaultClass \Optrion\Exporter
+ * @coversDefaultClass \Orpharion\Exporter
  */
 class ExporterImporterTest extends WP_UnitTestCase {
 
@@ -100,7 +100,7 @@ class ExporterImporterTest extends WP_UnitTestCase {
 	public function test_suggested_filename_shape(): void {
 		$name = Exporter::suggested_filename( 'https://example.com/blog' );
 		$this->assertStringContainsString( 'example.com', $name );
-		$this->assertStringStartsWith( 'optrion-export-', $name );
+		$this->assertStringStartsWith( 'orpharion-export-', $name );
 		$this->assertStringEndsWith( '.json', $name );
 	}
 
@@ -231,14 +231,14 @@ class ExporterImporterTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Optrion's own internal namespace (`optrion_*`) is not importable.
+	 * Orpharion's own internal namespace (`orpharion_*`) is not importable.
 	 */
-	public function test_import_skips_optrion_internal_namespace(): void {
+	public function test_import_skips_orpharion_internal_namespace(): void {
 		$json = (string) wp_json_encode(
 			array(
 				'options' => array(
 					array(
-						'option_name'  => 'optrion_db_version',
+						'option_name'  => 'orpharion_db_version',
 						'option_value' => '999',
 						'autoload'     => 'no',
 					),
@@ -319,12 +319,12 @@ class ExporterImporterTest extends WP_UnitTestCase {
 			array(
 				'options' => array(
 					array(
-						'option_name'  => '_OPTRION_Q__something',
+						'option_name'  => '_ORPHARION_Q__something',
 						'option_value' => 'x',
 						'autoload'     => 'no',
 					),
 					array(
-						'option_name'  => 'Optrion_Internal',
+						'option_name'  => 'Orpharion_Internal',
 						'option_value' => 'x',
 						'autoload'     => 'no',
 					),
@@ -355,7 +355,7 @@ class ExporterImporterTest extends WP_UnitTestCase {
 						'autoload'     => 'yes',
 					),
 					array(
-						'option_name'  => 'optrion_sampling_rate',
+						'option_name'  => 'orpharion_sampling_rate',
 						'option_value' => '1',
 						'autoload'     => 'no',
 					),

@@ -1,13 +1,13 @@
 <?php
 /**
- * Central registry for option names that Optrion refuses to touch.
+ * Central registry for option names that Orpharion refuses to touch.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,9 +17,9 @@ defined( 'ABSPATH' ) || exit;
  * Three categories are considered protected:
  *
  *  - **core**: names WordPress core manages (see `CoreOptions`).
- *  - **internal**: names Optrion itself stores (`optrion_*`).
+ *  - **internal**: names Orpharion itself stores (`orpharion_*`).
  *  - **quarantine rename**: rows whose name starts with the quarantine
- *    rename prefix (`_optrion_q__`) and whose lifecycle is owned by the
+ *    rename prefix (`_orpharion_q__`) and whose lifecycle is owned by the
  *    manifest table.
  *
  * Every destructive module (`Cleaner`, `Quarantine`, `Importer`) routes
@@ -35,9 +35,9 @@ defined( 'ABSPATH' ) || exit;
 final class ProtectedOptions {
 
 	/**
-	 * Prefix reserved for Optrion's own plugin options.
+	 * Prefix reserved for Orpharion's own plugin options.
 	 */
-	public const INTERNAL_PREFIX = 'optrion_';
+	public const INTERNAL_PREFIX = 'orpharion_';
 
 	/**
 	 * Normalizes an option name for guard comparison.
@@ -61,7 +61,7 @@ final class ProtectedOptions {
 	}
 
 	/**
-	 * True when the name belongs to Optrion's own plugin options.
+	 * True when the name belongs to Orpharion's own plugin options.
 	 *
 	 * @param string $option_name Option name to test.
 	 */
@@ -100,21 +100,21 @@ final class ProtectedOptions {
 		if ( CoreOptions::contains( $normalized ) ) {
 			return sprintf(
 				/* translators: %s: option name. */
-				__( 'Skipped core option: %s', 'optrion' ),
+				__( 'Skipped core option: %s', 'orpharion' ),
 				$option_name
 			);
 		}
 		if ( 0 === strpos( $normalized, Quarantine::RENAME_PREFIX ) ) {
 			return sprintf(
 				/* translators: %s: option name. */
-				__( 'Skipped quarantine-managed option: %s', 'optrion' ),
+				__( 'Skipped quarantine-managed option: %s', 'orpharion' ),
 				$option_name
 			);
 		}
 		if ( 0 === strpos( $normalized, self::INTERNAL_PREFIX ) ) {
 			return sprintf(
 				/* translators: %s: option name. */
-				__( 'Skipped Optrion internal option: %s', 'optrion' ),
+				__( 'Skipped Orpharion internal option: %s', 'orpharion' ),
 				$option_name
 			);
 		}

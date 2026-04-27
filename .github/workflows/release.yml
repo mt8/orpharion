@@ -34,8 +34,8 @@ jobs:
 
       - name: Stage plugin files
         run: |
-          mkdir -p stage/optrion
-          rsync -a ./ stage/optrion/ \
+          mkdir -p stage/orpharion
+          rsync -a ./ stage/orpharion/ \
             --exclude-from=.distignore \
             --exclude='.git' \
             --exclude='stage'
@@ -43,8 +43,8 @@ jobs:
       - name: Create zip archive
         working-directory: stage
         run: |
-          zip -r "optrion-${{ steps.version.outputs.version }}.zip" optrion
-          cp "optrion-${{ steps.version.outputs.version }}.zip" optrion.zip
+          zip -r "orpharion-${{ steps.version.outputs.version }}.zip" orpharion
+          cp "orpharion-${{ steps.version.outputs.version }}.zip" orpharion.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -53,5 +53,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            stage/optrion-${{ steps.version.outputs.version }}.zip
-            stage/optrion.zip
+            stage/orpharion-${{ steps.version.outputs.version }}.zip
+            stage/orpharion.zip

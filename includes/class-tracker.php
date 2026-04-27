@@ -2,12 +2,12 @@
 /**
  * Read-tracking module.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,12 +28,12 @@ final class Tracker {
 	/**
 	 * Transient key holding the "tracking is active" flag.
 	 */
-	public const ENABLE_TRANSIENT = 'optrion_tracking_enabled';
+	public const ENABLE_TRANSIENT = 'orpharion_tracking_enabled';
 
 	/**
 	 * Option key holding the sampling rate (0-100).
 	 */
-	public const SAMPLING_OPTION = 'optrion_sampling_rate';
+	public const SAMPLING_OPTION = 'orpharion_sampling_rate';
 
 	/**
 	 * Duration of the admin-triggered tracking window (seconds).
@@ -251,7 +251,7 @@ final class Tracker {
 		$plugins = self::normalize( defined( 'WP_PLUGIN_DIR' ) ? WP_PLUGIN_DIR : '' );
 		$mu      = self::normalize( defined( 'WPMU_PLUGIN_DIR' ) ? WPMU_PLUGIN_DIR : '' );
 		$themes  = self::normalize( function_exists( 'get_theme_root' ) ? get_theme_root() : '' );
-		$self    = self::normalize( defined( 'OPTRION_DIR' ) ? OPTRION_DIR : '' );
+		$self    = self::normalize( defined( 'ORPHARION_DIR' ) ? ORPHARION_DIR : '' );
 
 		foreach ( $trace as $frame ) {
 			if ( empty( $frame['file'] ) ) {

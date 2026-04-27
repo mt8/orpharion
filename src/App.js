@@ -1,5 +1,5 @@
 /**
- * Optrion admin SPA shell with tab navigation.
+ * Orpharion admin SPA shell with tab navigation.
  */
 
 import { useState } from '@wordpress/element';
@@ -11,10 +11,10 @@ import Quarantine from './tabs/Quarantine';
 import Import from './tabs/Import';
 
 const TABS = [
-	{ id: 'dashboard', label: __( 'Dashboard', 'optrion' ), component: Dashboard },
-	{ id: 'options', label: __( 'Options', 'optrion' ), component: OptionsList },
-	{ id: 'quarantine', label: __( 'Quarantine', 'optrion' ), component: Quarantine },
-	{ id: 'import', label: __( 'Import', 'optrion' ), component: Import },
+	{ id: 'dashboard', label: __( 'Dashboard', 'orpharion' ), component: Dashboard },
+	{ id: 'options', label: __( 'Options', 'orpharion' ), component: OptionsList },
+	{ id: 'quarantine', label: __( 'Quarantine', 'orpharion' ), component: Quarantine },
+	{ id: 'import', label: __( 'Import', 'orpharion' ), component: Import },
 ];
 
 const App = () => {
@@ -22,8 +22,8 @@ const App = () => {
 	const Current = TABS.find( ( t ) => t.id === active ).component;
 
 	return (
-		<div className="optrion-app">
-			<nav className="nav-tab-wrapper optrion-tabs">
+		<div className="orpharion-app">
+			<nav className="nav-tab-wrapper orpharion-tabs">
 				{ TABS.map( ( tab ) => (
 					<a
 						key={ tab.id }
@@ -38,7 +38,7 @@ const App = () => {
 					</a>
 				) ) }
 			</nav>
-			<div className="optrion-tab-panel">
+			<div className="orpharion-tab-panel">
 				<Current />
 			</div>
 		</div>

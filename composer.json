@@ -1,5 +1,5 @@
 {
-    "name": "mt8/optrion",
+    "name": "mt8/orpharion",
     "description": "Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
@@ -15,12 +15,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Optrion\\": "includes/"
+            "Orpharion\\": "includes/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Optrion\\Tests\\": "tests/"
+            "Orpharion\\Tests\\": "tests/"
         }
     },
     "config": {

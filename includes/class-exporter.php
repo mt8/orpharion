@@ -2,12 +2,12 @@
 /**
  * Export module.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -78,7 +78,7 @@ final class Exporter {
 		$host = wp_parse_url( $site_url, PHP_URL_HOST );
 		$host = is_string( $host ) && '' !== $host ? $host : 'site';
 		$host = sanitize_file_name( $host );
-		return sprintf( 'optrion-export-%s-%s.json', $host, gmdate( 'Ymd-His' ) );
+		return sprintf( 'orpharion-export-%s-%s.json', $host, gmdate( 'Ymd-His' ) );
 	}
 
 	/**

@@ -2,26 +2,26 @@
 /**
  * Cleaner module tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Cleaner;
-use Optrion\Quarantine;
-use Optrion\Schema;
+use Orpharion\Cleaner;
+use Orpharion\Quarantine;
+use Orpharion\Schema;
 use WP_UnitTestCase;
 
 /**
  * Exercises the delete workflow.
  *
- * Optrion no longer writes a server-side backup on delete; these tests pin
- * that invariant (no `wp-content/optrion-backups/` directory ever created)
+ * Orpharion no longer writes a server-side backup on delete; these tests pin
+ * that invariant (no `wp-content/orpharion-backups/` directory ever created)
  * alongside the actual delete behavior.
  *
- * @coversDefaultClass \Optrion\Cleaner
+ * @coversDefaultClass \Orpharion\Cleaner
  */
 class CleanerTest extends WP_UnitTestCase {
 
@@ -34,7 +34,7 @@ class CleanerTest extends WP_UnitTestCase {
 		parent::set_up();
 		Schema::install();
 
-		$legacy_dir = trailingslashit( WP_CONTENT_DIR ) . 'optrion-backups';
+		$legacy_dir = trailingslashit( WP_CONTENT_DIR ) . 'orpharion-backups';
 		if ( is_dir( $legacy_dir ) ) {
 			foreach ( (array) glob( trailingslashit( $legacy_dir ) . '*' ) as $file ) {
 				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.unlink_unlink
@@ -85,20 +85,20 @@ class CleanerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Optrion's own plugin-option namespace is off-limits to the cleaner so
+	 * Orpharion's own plugin-option namespace is off-limits to the cleaner so
 	 * the plugin cannot delete its own state through the same endpoint.
 	 */
-	public function test_delete_skips_optrion_internal_namespace(): void {
-		update_option( 'optrion_sampling_rate', '50' );
-		$db_version_before = get_option( 'optrion_db_version' );
+	public function test_delete_skips_orpharion_internal_namespace(): void {
+		update_option( 'orpharion_sampling_rate', '50' );
+		$db_version_before = get_option( 'orpharion_db_version' );
 
 		$result = Cleaner::delete(
-			array( 'optrion_sampling_rate', 'OPTRION_DB_VERSION' )
+			array( 'orpharion_sampling_rate', 'ORPHARION_DB_VERSION' )
 		);
 		$this->assertSame( 0, $result['deleted'] );
 		$this->assertSame( 2, $result['skipped'] );
-		$this->assertSame( '50', get_option( 'optrion_sampling_rate' ) );
-		$this->assertSame( $db_version_before, get_option( 'optrion_db_version' ) );
+		$this->assertSame( '50', get_option( 'orpharion_sampling_rate' ) );
+		$this->assertSame( $db_version_before, get_option( 'orpharion_db_version' ) );
 	}
 
 	/**
@@ -149,13 +149,13 @@ class CleanerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Deletion never creates the legacy wp-content/optrion-backups/ directory.
+	 * Deletion never creates the legacy wp-content/orpharion-backups/ directory.
 	 * The plugin promises not to persist option_value content on disk.
 	 */
 	public function test_delete_does_not_create_backup_directory(): void {
 		add_option( 'secret_option', 'api-key-value', '', 'no' );
 		Cleaner::delete( array( 'secret_option' ) );
 
-		$this->assertDirectoryDoesNotExist( trailingslashit( WP_CONTENT_DIR ) . 'optrion-backups' );
+		$this->assertDirectoryDoesNotExist( trailingslashit( WP_CONTENT_DIR ) . 'orpharion-backups' );
 	}
 }
