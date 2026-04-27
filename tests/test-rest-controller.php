@@ -2,23 +2,23 @@
 /**
  * REST controller smoke tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Quarantine;
-use Optrion\Rest_Controller;
-use Optrion\Schema;
+use Orpharion\Quarantine;
+use Orpharion\Rest_Controller;
+use Orpharion\Schema;
 use WP_REST_Request;
 use WP_UnitTestCase;
 
 /**
  * Verifies route registration, permission gating, and a few end-to-end responses.
  *
- * @coversDefaultClass \Optrion\Rest_Controller
+ * @coversDefaultClass \Orpharion\Rest_Controller
  */
 class RestControllerTest extends WP_UnitTestCase {
 
@@ -42,7 +42,7 @@ class RestControllerTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * All optrion routes are registered on rest_api_init.
+	 * All orpharion routes are registered on rest_api_init.
 	 */
 	public function test_routes_are_registered(): void {
 		$routes = rest_get_server()->get_routes();
@@ -92,11 +92,11 @@ class RestControllerTest extends WP_UnitTestCase {
 	 */
 	public function test_list_options_excludes_transients(): void {
 		wp_set_current_user( $this->admin_id );
-		set_transient( 'optrion_rest_test_transient', 'x', 300 );
-		set_site_transient( 'optrion_rest_test_site_transient', 'x', 300 );
+		set_transient( 'orpharion_rest_test_transient', 'x', 300 );
+		set_site_transient( 'orpharion_rest_test_site_transient', 'x', 300 );
 		$req = new WP_REST_Request( 'GET', '/' . Rest_Controller::NAMESPACE_V1 . '/options' );
 		$req->set_param( 'per_page', 200 );
-		$req->set_param( 'search', 'optrion_rest_test' );
+		$req->set_param( 'search', 'orpharion_rest_test' );
 		$response = rest_get_server()->dispatch( $req );
 		$this->assertSame( 200, $response->get_status() );
 		$names = array_column( $response->get_data()['items'], 'option_name' );

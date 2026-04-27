@@ -2,22 +2,22 @@
 /**
  * Cleaner module.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Deletes wp_options rows.
  *
- * Optrion deliberately never persists option_value content to the server
+ * Orpharion deliberately never persists option_value content to the server
  * filesystem. Administrators who want a safety copy export the rows
  * through the admin UI (Options → Export selected → browser download)
- * or via WP-CLI (`wp optrion export --output=<path>` with an explicit
+ * or via WP-CLI (`wp orpharion export --output=<path>` with an explicit
  * operator-owned destination) before calling this module. See
  * docs/DESIGN.md §4.4 / §7.
  */
@@ -71,7 +71,7 @@ final class Cleaner {
 			if ( false === $deleted || 0 === $deleted ) {
 				$errors[] = sprintf(
 					/* translators: %s: option_name that could not be deleted. */
-					__( 'Failed to delete %s.', 'optrion' ),
+					__( 'Failed to delete %s.', 'orpharion' ),
 					$name
 				);
 				continue;

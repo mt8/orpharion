@@ -2,21 +2,21 @@
 /**
  * Tracker module tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Schema;
-use Optrion\Tracker;
+use Orpharion\Schema;
+use Orpharion\Tracker;
 use WP_UnitTestCase;
 
 /**
  * Covers buffering, flushing, and caller classification.
  *
- * @coversDefaultClass \Optrion\Tracker
+ * @coversDefaultClass \Orpharion\Tracker
  */
 class TrackerTest extends WP_UnitTestCase {
 
@@ -58,9 +58,9 @@ class TrackerTest extends WP_UnitTestCase {
 	/**
 	 * Frames inside the plugin itself are skipped when classifying.
 	 */
-	public function test_classify_trace_skips_optrion_frames(): void {
+	public function test_classify_trace_skips_orpharion_frames(): void {
 		$trace  = array(
-			array( 'file' => OPTRION_DIR . 'includes/class-tracker.php' ),
+			array( 'file' => ORPHARION_DIR . 'includes/class-tracker.php' ),
 			array( 'file' => WP_PLUGIN_DIR . '/jetpack/jetpack.php' ),
 		);
 		$result = Tracker::classify_trace( $trace );
@@ -169,21 +169,21 @@ class TrackerTest extends WP_UnitTestCase {
 	 * from the live backtrace rather than a bulk-capture fallback.
 	 */
 	public function test_register_option_read_hooks_covers_autoload_options(): void {
-		add_option( 'optrion_test_autoload', 'v', '', 'yes' );
-		add_option( 'optrion_test_non_autoload', 'v', '', 'no' );
+		add_option( 'orpharion_test_autoload', 'v', '', 'yes' );
+		add_option( 'orpharion_test_non_autoload', 'v', '', 'no' );
 
 		Tracker::register_option_read_hooks();
 
 		$this->assertNotFalse(
-			has_filter( 'option_optrion_test_autoload' ),
+			has_filter( 'option_orpharion_test_autoload' ),
 			'Autoload option should have a per-name filter registered.'
 		);
 		$this->assertNotFalse(
-			has_filter( 'option_optrion_test_non_autoload' ),
+			has_filter( 'option_orpharion_test_non_autoload' ),
 			'Non-autoload option should have a per-name filter registered.'
 		);
 
-		delete_option( 'optrion_test_autoload' );
-		delete_option( 'optrion_test_non_autoload' );
+		delete_option( 'orpharion_test_autoload' );
+		delete_option( 'orpharion_test_non_autoload' );
 	}
 }

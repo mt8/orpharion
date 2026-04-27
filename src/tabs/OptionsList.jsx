@@ -28,11 +28,11 @@ const formatLastRead = ( iso ) => {
 };
 
 const COLUMNS = [
-	{ key: 'name', label: __( 'option_name', 'optrion' ), sortable: true },
-	{ key: 'accessor', label: __( 'Accessor', 'optrion' ), sortable: true },
-	{ key: 'autoload', label: __( 'Autoload', 'optrion' ), sortable: false },
-	{ key: 'size', label: __( 'Size', 'optrion' ), sortable: true },
-	{ key: 'last_read', label: __( 'Last accessed', 'optrion' ), sortable: true },
+	{ key: 'name', label: __( 'option_name', 'orpharion' ), sortable: true },
+	{ key: 'accessor', label: __( 'Accessor', 'orpharion' ), sortable: true },
+	{ key: 'autoload', label: __( 'Autoload', 'orpharion' ), sortable: false },
+	{ key: 'size', label: __( 'Size', 'orpharion' ), sortable: true },
+	{ key: 'last_read', label: __( 'Last accessed', 'orpharion' ), sortable: true },
 ];
 
 const OptionsList = () => {
@@ -162,8 +162,8 @@ const OptionsList = () => {
 				sprintf(
 					/* translators: %d: number of options about to be deleted. */
 					__(
-						'Permanently delete %d option(s)?\n\nOptrion does NOT write a server-side backup. If you want a restore copy, cancel this dialog, use "Export selected" to download a JSON file to your machine, then come back and delete.',
-						'optrion'
+						'Permanently delete %d option(s)?\n\nOrpharion does NOT write a server-side backup. If you want a restore copy, cancel this dialog, use "Export selected" to download a JSON file to your machine, then come back and delete.',
+						'orpharion'
 					),
 					selected.size
 				)
@@ -177,7 +177,7 @@ const OptionsList = () => {
 				setNotice( {
 					type: 'success',
 					/* translators: %d: number of deleted options. */
-					message: sprintf( __( '%d option(s) deleted.', 'optrion' ), count ),
+					message: sprintf( __( '%d option(s) deleted.', 'orpharion' ), count ),
 				} );
 				load();
 			} )
@@ -192,7 +192,7 @@ const OptionsList = () => {
 				setNotice( {
 					type: 'success',
 					/* translators: %d: number of quarantined options. */
-					message: sprintf( __( '%d option(s) quarantined.', 'optrion' ), count ),
+					message: sprintf( __( '%d option(s) quarantined.', 'orpharion' ), count ),
 				} );
 				load();
 			} )
@@ -209,7 +209,7 @@ const OptionsList = () => {
 			const url = URL.createObjectURL( blob );
 			const a = document.createElement( 'a' );
 			a.href = url;
-			a.download = 'optrion-export.json';
+			a.download = 'orpharion-export.json';
 			document.body.appendChild( a );
 			a.click();
 			a.remove();
@@ -217,7 +217,7 @@ const OptionsList = () => {
 			setNotice( {
 				type: 'success',
 				/* translators: %d: number of exported options. */
-				message: sprintf( __( '%d option(s) exported.', 'optrion' ), selected.size ),
+				message: sprintf( __( '%d option(s) exported.', 'orpharion' ), selected.size ),
 			} );
 		} catch ( e ) {
 			setNotice( { type: 'error', message: e.message || String( e ) } );
@@ -253,27 +253,27 @@ const OptionsList = () => {
 		return (
 			<>
 				{ name }
-				<span className="optrion-accessor-type"> ({ type })</span>
+				<span className="orpharion-accessor-type"> ({ type })</span>
 				{ showInactive && (
 					<span
-						className="optrion-badge optrion-badge--inactive"
+						className="orpharion-badge orpharion-badge--inactive"
 						title={ __(
 							'Accessor plugin/theme is currently inactive.',
-							'optrion'
+							'orpharion'
 						) }
 					>
-						{ __( 'inactive', 'optrion' ) }
+						{ __( 'inactive', 'orpharion' ) }
 					</span>
 				) }
 				{ isProtected( item ) && (
 					<span
-						className="optrion-badge optrion-badge--protected"
+						className="orpharion-badge orpharion-badge--protected"
 						title={ __(
 							'WordPress core option — cannot be selected or deleted.',
-							'optrion'
+							'orpharion'
 						) }
 					>
-						{ __( 'protected', 'optrion' ) }
+						{ __( 'protected', 'orpharion' ) }
 					</span>
 				) }
 			</>
@@ -282,20 +282,20 @@ const OptionsList = () => {
 
 
 	const bulkActions = (
-		<div className="optrion-bulk">
+		<div className="orpharion-bulk">
 			<Button
 				variant="primary"
 				onClick={ bulkQuarantine }
 				disabled={ ! selected.size }
 			>
-				{ __( 'Quarantine selected', 'optrion' ) }
+				{ __( 'Quarantine selected', 'orpharion' ) }
 			</Button>
 			<Button
 				variant="secondary"
 				onClick={ bulkExport }
 				disabled={ ! selected.size }
 			>
-				{ __( 'Export selected', 'optrion' ) }
+				{ __( 'Export selected', 'orpharion' ) }
 			</Button>
 			<Button
 				variant="secondary"
@@ -303,12 +303,12 @@ const OptionsList = () => {
 				onClick={ bulkDelete }
 				disabled={ ! selected.size }
 			>
-				{ __( 'Delete selected', 'optrion' ) }
+				{ __( 'Delete selected', 'orpharion' ) }
 			</Button>
-			<span className="optrion-bulk__hint">
+			<span className="orpharion-bulk__hint">
 				{ sprintf(
 					/* translators: 1: selected rows, 2: matching rows. */
-					__( '%1$d selected · %2$d matches', 'optrion' ),
+					__( '%1$d selected · %2$d matches', 'orpharion' ),
 					selected.size,
 					total
 				) }
@@ -317,10 +317,10 @@ const OptionsList = () => {
 	);
 
 	return (
-		<div className="optrion-options-list">
-			<div className="optrion-filters">
+		<div className="orpharion-options-list">
+			<div className="orpharion-filters">
 				<TextControl
-					label={ __( 'Search', 'optrion' ) }
+					label={ __( 'Search', 'orpharion' ) }
 					value={ search }
 					onChange={ ( v ) => {
 						setPage( 1 );
@@ -328,10 +328,10 @@ const OptionsList = () => {
 					} }
 				/>
 				<SelectControl
-					label={ __( 'Accessor', 'optrion' ) }
+					label={ __( 'Accessor', 'orpharion' ) }
 					value={ accessorType }
 					options={ [
-						{ label: __( 'All', 'optrion' ), value: '' },
+						{ label: __( 'All', 'orpharion' ), value: '' },
 						{ label: 'plugin', value: 'plugin' },
 						{ label: 'theme', value: 'theme' },
 						{ label: 'widget', value: 'widget' },
@@ -344,7 +344,7 @@ const OptionsList = () => {
 					} }
 				/>
 				<CheckboxControl
-					label={ __( 'Inactive accessors only', 'optrion' ) }
+					label={ __( 'Inactive accessors only', 'orpharion' ) }
 					checked={ inactiveOnly }
 					onChange={ ( v ) => {
 						setPage( 1 );
@@ -352,7 +352,7 @@ const OptionsList = () => {
 					} }
 				/>
 				<CheckboxControl
-					label={ __( 'Autoload only', 'optrion' ) }
+					label={ __( 'Autoload only', 'orpharion' ) }
 					checked={ autoloadOnly }
 					onChange={ ( v ) => {
 						setPage( 1 );
@@ -360,7 +360,7 @@ const OptionsList = () => {
 					} }
 				/>
 				<CheckboxControl
-					label={ __( 'Show WordPress-Core', 'optrion' ) }
+					label={ __( 'Show WordPress-Core', 'orpharion' ) }
 					checked={ showCore }
 					onChange={ setShowCore }
 				/>
@@ -375,11 +375,11 @@ const OptionsList = () => {
 					{ notice.message }
 				</Notice>
 			) }
-			{ error && <p className="optrion-error">{ error }</p> }
+			{ error && <p className="orpharion-error">{ error }</p> }
 			{ loading ? (
 				<Spinner />
 			) : (
-				<div className="optrion-table-scroll">
+				<div className="orpharion-table-scroll">
 				<table className="widefat striped">
 					<thead>
 						<tr>
@@ -392,7 +392,7 @@ const OptionsList = () => {
 									onChange={ toggleAllVisible }
 									aria-label={ __(
 										'Select all options on this page',
-										'optrion'
+										'orpharion'
 									) }
 								/>
 							</th>
@@ -401,11 +401,11 @@ const OptionsList = () => {
 									<th key={ col.key }>
 										<button
 											type="button"
-											className="optrion-sort-button"
+											className="orpharion-sort-button"
 											onClick={ () => changeSort( col.key ) }
 											aria-label={ sprintf(
 												/* translators: %s: column heading label (e.g. "Size"). */
-												__( 'Sort by %s', 'optrion' ),
+												__( 'Sort by %s', 'orpharion' ),
 												col.label
 											) }
 										>
@@ -425,7 +425,7 @@ const OptionsList = () => {
 								key={ item.option_name }
 								className={
 									isProtected( item )
-										? 'optrion-row--protected'
+										? 'orpharion-row--protected'
 										: ''
 								}
 							>
@@ -440,7 +440,7 @@ const OptionsList = () => {
 											isProtected( item )
 												? __(
 														'WordPress core option — protected',
-														'optrion'
+														'orpharion'
 												  )
 												: undefined
 										}
@@ -453,13 +453,13 @@ const OptionsList = () => {
 								<td>
 									{ item.is_autoload ? (
 										<span
-											className="optrion-badge optrion-badge--autoload"
+											className="orpharion-badge orpharion-badge--autoload"
 											title={ item.autoload }
 										>
-											{ __( 'autoload', 'optrion' ) }
+											{ __( 'autoload', 'orpharion' ) }
 										</span>
 									) : (
-										<span className="optrion-muted">
+										<span className="orpharion-muted">
 											{ item.autoload || 'no' }
 										</span>
 									) }
@@ -478,22 +478,22 @@ const OptionsList = () => {
 				</div>
 			) }
 			{ bulkActions }
-			<div className="optrion-pager">
+			<div className="orpharion-pager">
 				<Button
 					disabled={ page <= 1 }
 					variant="secondary"
 					onClick={ () => goToPage( page - 1 ) }
 				>
-					{ __( 'Previous', 'optrion' ) }
+					{ __( 'Previous', 'orpharion' ) }
 				</Button>
-				<span className="optrion-pager__jump">
+				<span className="orpharion-pager__jump">
 					<label>
-						{ __( 'Page', 'optrion' ) }
+						{ __( 'Page', 'orpharion' ) }
 						<input
 							type="number"
 							min="1"
 							max={ totalPages }
-							className="optrion-pager__input"
+							className="orpharion-pager__input"
 							value={ pageInput }
 							onChange={ ( e ) => setPageInput( e.target.value ) }
 							onBlur={ () => goToPage( pageInput ) }
@@ -503,13 +503,13 @@ const OptionsList = () => {
 									goToPage( pageInput );
 								}
 							} }
-							aria-label={ __( 'Jump to page', 'optrion' ) }
+							aria-label={ __( 'Jump to page', 'orpharion' ) }
 						/>
 					</label>
 					<span>
 						{ sprintf(
 							/* translators: %d: total number of pages. */
-							__( 'of %d', 'optrion' ),
+							__( 'of %d', 'orpharion' ),
 							totalPages
 						) }
 					</span>
@@ -519,17 +519,17 @@ const OptionsList = () => {
 					variant="secondary"
 					onClick={ () => goToPage( page + 1 ) }
 				>
-					{ __( 'Next', 'optrion' ) }
+					{ __( 'Next', 'orpharion' ) }
 				</Button>
 				<SelectControl
-					className="optrion-pager__per-page"
-					label={ __( 'Per page', 'optrion' ) }
+					className="orpharion-pager__per-page"
+					label={ __( 'Per page', 'orpharion' ) }
 					hideLabelFromVision
 					value={ String( perPage ) }
 					options={ PER_PAGE_CHOICES.map( ( n ) => ( {
 						label: sprintf(
 							/* translators: %d: rows per page. */
-							__( '%d / page', 'optrion' ),
+							__( '%d / page', 'orpharion' ),
 							n
 						),
 						value: String( n ),

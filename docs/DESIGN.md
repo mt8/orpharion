@@ -1,8 +1,8 @@
-# Optrion — Plugin Design
+# Orpharion — Plugin Design
 
 ## 1. Overview
 
-WordPress' `wp_options` table accumulates rows written by plugins and themes, and those rows stay behind even after the owning plugin or theme is deactivated or deleted. Optrion records "who read which option, and when", then surfaces the raw signals — accessor, last read time, `autoload`, and size — so administrators can clean up the table safely.
+WordPress' `wp_options` table accumulates rows written by plugins and themes, and those rows stay behind even after the owning plugin or theme is deactivated or deleted. Orpharion records "who read which option, and when", then surfaces the raw signals — accessor, last read time, `autoload`, and size — so administrators can clean up the table safely.
 
 ### Problems it solves
 
@@ -56,7 +56,7 @@ WordPress' `wp_options` table accumulates rows written by plugins and themes, an
 │                    │                                 │
 │         ┌──────────▼────────────────┐                │
 │         │  REST API endpoints       │                │
-│         │  /wp-json/optrion/v1/*    │                │
+│         │  /wp-json/orpharion/v1/*    │                │
 │         └──────────┬────────────────┘                │
 │                    │                                 │
 └────────────────────┼────────────────────────────────┘
@@ -111,7 +111,7 @@ Record "when and by whom" every time `get_option()` is called.
 
 #### Hook strategy
 
-The only hook that can attribute an individual `get_option()` call to its caller is `option_{$name}`, so Optrion **dynamically registers an `option_{$name}` filter for every option**. There is no split between autoload and non-autoload rows.
+The only hook that can attribute an individual `get_option()` call to its caller is `option_{$name}`, so Orpharion **dynamically registers an `option_{$name}` filter for every option**. There is no split between autoload and non-autoload rows.
 
 | Target | Hook | Notes |
 |---|---|---|
@@ -169,14 +169,14 @@ The core options registry is a hard-coded list of roughly 60 WordPress-shipped o
 
 #### active / inactive flag
 
-When the inferred accessor matches an installed plugin/theme slug, Optrion adds an `active` flag reflecting whether the plugin/theme is currently activated. (`core` and `widget` are always active; `unknown` is always inactive.)
+When the inferred accessor matches an installed plugin/theme slug, Orpharion adds an `active` flag reflecting whether the plugin/theme is currently activated. (`core` and `widget` are always active; `unknown` is always inactive.)
 
 #### Admin UI treatment
 
 - The list table exposes accessor (display name + type + inactive badge), an autoload badge, size, and last-read timestamp as individual columns.
 - Sort keys: option_name / accessor (accessor.name → slug → type precedence, ascending on the visible label) / size / last_read. Autoload is a binary badge, so it is not sortable.
 - Filters: accessor type, `inactive_only` (only inactive accessors), `autoload_only` (only `autoload=yes`), and `search` (substring match on option_name).
-- `_transient_*` / `_site_transient_*` rows and Optrion's own internal options (`optrion_*`, `_optrion_q__*`) are hidden from the list.
+- `_transient_*` / `_site_transient_*` rows and Orpharion's own internal options (`orpharion_*`, `_orpharion_q__*`) are hidden from the list.
 
 ### 4.3 Export / Import (backup module)
 
@@ -209,9 +209,9 @@ Legacy `1.0.0` payloads (each entry had an extra `score` object) are still accep
 #### Export specification
 
 - Targets: options selected in the UI, or bulk accessor-based filtering via the CLI.
-- Filename: `optrion-export-{site}-{date}.json`.
+- Filename: `orpharion-export-{site}-{date}.json`.
 - Values ship as they live in the DB (already serialized), so a restore is a plain `INSERT`.
-- **Delivery invariant**: the admin UI returns the payload in the REST response body and saves it through a browser `Blob` download — the server never writes the file. WP-CLI defaults to stdout; `--output=<path>` is the operator's explicit choice to persist. No temp files, no cache, no `wp-content/optrion-*` directory is ever created by Optrion itself.
+- **Delivery invariant**: the admin UI returns the payload in the REST response body and saves it through a browser `Blob` download — the server never writes the file. WP-CLI defaults to stdout; `--output=<path>` is the operator's explicit choice to persist. No temp files, no cache, no `wp-content/orpharion-*` directory is ever created by Orpharion itself.
 
 #### Import specification
 
@@ -219,7 +219,7 @@ Legacy `1.0.0` payloads (each entry had an extra `score` object) are still accep
 - Overwrite mode (update existing rows on restore) is an explicit checkbox.
 - A dry-run preview shows add / overwrite / skip counts before the real run.
 - The `tracking` subobject is displayed for reference only; the importer never writes to the tracking table during restore.
-- The importer mirrors the same "do not touch" set as the cleaner: WordPress core options (per `CoreOptions`) are never written, and Optrion's own internal namespaces — its plugin options (`optrion_*`) and the quarantine rename namespace (owned by the manifest table) — are also refused. Skipped entries are reported in the summary.
+- The importer mirrors the same "do not touch" set as the cleaner: WordPress core options (per `CoreOptions`) are never written, and Orpharion's own internal namespaces — its plugin options (`orpharion_*`) and the quarantine rename namespace (owned by the manifest table) — are also refused. Skipped entries are reported in the summary.
 
 ### 4.4 Cleaner (deletion module)
 
@@ -240,14 +240,14 @@ Admin selects rows to delete
 
 #### No server-side backup (security invariant)
 
-Optrion **never writes `option_value` content to the server filesystem**. `wp_options` rows can contain API keys, SMTP credentials, payment gateway secrets, license tokens, and other values that should not be copied into `wp-content/` — even with an `.htaccess` guard, that directory is routinely snapshot by host-level backups or misconfigured web servers. The plugin therefore does not create a \"pre-delete backup\" directory on its behalf.
+Orpharion **never writes `option_value` content to the server filesystem**. `wp_options` rows can contain API keys, SMTP credentials, payment gateway secrets, license tokens, and other values that should not be copied into `wp-content/` — even with an `.htaccess` guard, that directory is routinely snapshot by host-level backups or misconfigured web servers. The plugin therefore does not create a \"pre-delete backup\" directory on its behalf.
 
 Administrators who want a restore path take one explicit action before running a delete:
 
 - **Admin UI**: Select the rows and use **Export selected** to download a JSON file to the browser. The file lands wherever the operator's browser saves it; the server never sees it.
-- **WP-CLI**: Run `wp optrion export --names=...` (or `--accessor-type=...` / `--inactive-only`). Default sink is stdout; `--output=<path>` persists to an operator-chosen file path. Either way, the operator is explicitly in control of where the JSON goes.
+- **WP-CLI**: Run `wp orpharion export --names=...` (or `--accessor-type=...` / `--inactive-only`). Default sink is stdout; `--output=<path>` persists to an operator-chosen file path. Either way, the operator is explicitly in control of where the JSON goes.
 
-`wp optrion clean` refuses to run without the explicit `--i-have-a-backup` flag to acknowledge that the operator has taken care of the backup step themselves.
+`wp orpharion clean` refuses to run without the explicit `--i-have-a-backup` flag to acknowledge that the operator has taken care of the backup step themselves.
 
 #### Bulk deletion options
 
@@ -260,7 +260,7 @@ Administrators who want a restore path take one explicit action before running a
 - Known WordPress core options have their delete button disabled, and the UI shows a lock icon.
 - The autoload total size before/after deletion is surfaced on the UI (e.g. "autoload payload 1.2 MB → 0.8 MB").
 - Admin confirmation dialog reminds the operator to export first if they need a restore path.
-- The destructive-module guards (`Cleaner`, `Quarantine`, `Importer`) and the main list's `NOT LIKE` filter are all derived from a single `ProtectedOptions` helper, which covers three categories: WordPress core options, Optrion's own plugin-option namespace (`optrion_*`), and the quarantine rename namespace (owned by the manifest table's lifecycle). Matching follows the `wp_options.option_name` collation semantics so a non-canonical spelling does not slip past the guard.
+- The destructive-module guards (`Cleaner`, `Quarantine`, `Importer`) and the main list's `NOT LIKE` filter are all derived from a single `ProtectedOptions` helper, which covers three categories: WordPress core options, Orpharion's own plugin-option namespace (`orpharion_*`), and the quarantine rename namespace (owned by the manifest table's lifecycle). Matching follows the `wp_options.option_name` collation semantics so a non-canonical spelling does not slip past the guard.
 
 ### 4.5 Quarantine module
 
@@ -270,23 +270,23 @@ Flag options that "look unused but we are not 100% sure" for observation **witho
 
 #### Mechanism
 
-When a row is quarantined, Optrion renames it (`wpseo_titles` → `_optrion_q__wpseo_titles`) AND registers a `pre_option_{original_name}` filter that returns the value from the renamed row. The net effect is that `get_option()` keeps returning **the same value** it returned before quarantine, so the site keeps running as usual. Every time the filter fires, Optrion records the access via the live backtrace and updates the manifest at the end of the request.
+When a row is quarantined, Orpharion renames it (`wpseo_titles` → `_orpharion_q__wpseo_titles`) AND registers a `pre_option_{original_name}` filter that returns the value from the renamed row. The net effect is that `get_option()` keeps returning **the same value** it returned before quarantine, so the site keeps running as usual. Every time the filter fires, Orpharion records the access via the live backtrace and updates the manifest at the end of the request.
 
 ```
 On quarantine:
-  wp_options:   wpseo_titles  →  _optrion_q__wpseo_titles (autoload=no)
+  wp_options:   wpseo_titles  →  _orpharion_q__wpseo_titles (autoload=no)
   runtime:      add_filter('pre_option_wpseo_titles', closure returning the stored value)
 
 On restore:
-  wp_options:   _optrion_q__wpseo_titles  →  wpseo_titles (autoload restored)
+  wp_options:   _orpharion_q__wpseo_titles  →  wpseo_titles (autoload restored)
   runtime:      drop the cache entry (closure no-ops on the next call)
 
 On permanent delete:
-  wp_options:   DELETE _optrion_q__wpseo_titles
+  wp_options:   DELETE _orpharion_q__wpseo_titles
   runtime:      drop the cache entry
 ```
 
-The quarantine rename flips `autoload` to `no` so the renamed row does not ride along in `alloptions`; Optrion serves the value through the `pre_option` filter instead, so autoload is no longer required. The original autoload value is saved on the manifest so restore can put it back.
+The quarantine rename flips `autoload` to `no` so the renamed row does not ride along in `alloptions`; Orpharion serves the value through the `pre_option` filter instead, so autoload is no longer required. The original autoload value is saved on the manifest so restore can put it back.
 
 #### Quarantine manifest
 
@@ -347,7 +347,7 @@ Admin selects rows and runs "Quarantine"
   - **Auto-restore** (default, safest): put the row back and notify the admin.
   - **Auto-delete** (power users): write a JSON backup and `DELETE`.
   - **Keep** (no expiry): hold the row as quarantined until the admin decides manually.
-- The sweep runs daily on WordPress cron (`optrion_quarantine_check`).
+- The sweep runs daily on WordPress cron (`orpharion_quarantine_check`).
 - **Quarantines with recorded access are exempt from auto-processing**: rows with `last_accessed_at IS NOT NULL` are excluded from the cron query. We never auto-restore or auto-delete an option the site is still relying on; the admin must restore it explicitly.
 
 #### Quarantine restrictions
@@ -355,7 +355,7 @@ Admin selects rows and runs "Quarantine"
 - WordPress core options (the curated list) cannot be quarantined (the UI locks them).
 - `active_plugins`, `template`, `stylesheet`, `cron`, and a handful of other critical options get an extra guard.
 - Maximum simultaneous quarantines: **50** (prevents accidental mass isolation).
-- The renamed `option_name` (`_optrion_q__` prefix + original name) must fit in 191 characters; original names longer than 178 characters are rejected with a clear UI message.
+- The renamed `option_name` (`_orpharion_q__` prefix + original name) must fit in 191 characters; original names longer than 178 characters are rejected with a clear UI message.
 
 #### Quarantine list UI
 
@@ -377,26 +377,26 @@ A header badge "Quarantined: N" is always visible.
 
 ```bash
 # Quarantine options (default window: 7 days).
-wp optrion quarantine wpseo_titles wpseo_social --days=14
+wp orpharion quarantine wpseo_titles wpseo_social --days=14
 
 # List quarantined options.
-wp optrion quarantine list
+wp orpharion quarantine list
 
 # Restore.
-wp optrion quarantine restore wpseo_titles
+wp orpharion quarantine restore wpseo_titles
 
 # Permanent delete from quarantine.
-wp optrion quarantine delete wpseo_titles --yes
+wp orpharion quarantine delete wpseo_titles --yes
 
 # Run the expiry sweep manually (equivalent of the cron job).
-wp optrion quarantine check-expiry
+wp orpharion quarantine check-expiry
 ```
 
 ---
 
 ## 5. REST API
 
-Base: `/wp-json/optrion/v1`
+Base: `/wp-json/orpharion/v1`
 
 Authorization: every endpoint requires the `manage_options` capability.
 
@@ -453,11 +453,11 @@ Authorization: every endpoint requires the `manage_options` capability.
 
 ### 6.1 Screen layout
 
-Optrion adds a top-level "Optrion" menu (with a dedicated branded icon) to the WordPress admin.
+Orpharion adds a top-level "Orpharion" menu (with a dedicated branded icon) to the WordPress admin.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  Optrion                                                         │
+│  Orpharion                                                         │
 ├──────────────┬────────────────┬──────────────┬───────────────────┤
 │ Dashboard    │ Options        │ Quarantine   │ Import            │
 └──────────────┴────────────────┴──────────────┴───────────────────┘
@@ -516,7 +516,7 @@ Clicking `option_name` opens a modal with:
 
 ### 6.5 Export
 
-There is no dedicated export screen. Select rows in the options table and use the "Export selected" bulk action to download the JSON. Accessor-based bulk export is available through WP-CLI (`wp optrion export --accessor-type=<type>`, `wp optrion export --inactive-only`).
+There is no dedicated export screen. Select rows in the options table and use the "Export selected" bulk action to download the JSON. Accessor-based bulk export is available through WP-CLI (`wp orpharion export --accessor-type=<type>`, `wp orpharion export --inactive-only`).
 
 ### 6.6 Import screen
 
@@ -534,7 +534,7 @@ There is no dedicated export screen. Select rows in the options table and use th
 | Capability | Every operation requires `manage_options` |
 | CSRF | REST API relies on the standard WordPress nonce middleware (`X-WP-Nonce`) |
 | SQL injection | `$wpdb->prepare()` on every query |
-| Sensitive data at rest | **Optrion never persists `option_value` content to the server filesystem.** `Cleaner::delete()` does not write a backup; exports are browser downloads (admin UI) or operator-directed CLI output. No `wp-content/optrion-backups/`, no temp files, no cache. See §4.3 and §4.4. |
+| Sensitive data at rest | **Orpharion never persists `option_value` content to the server filesystem.** `Cleaner::delete()` does not write a backup; exports are browser downloads (admin UI) or operator-directed CLI output. No `wp-content/orpharion-backups/`, no temp files, no cache. See §4.3 and §4.4. |
 | Import validation | JSON schema validation, `version` header required, `option_name` character check (alphanumerics, underscores, hyphens only) |
 | Core option protection | The curated ~60-entry core options list blocks DELETE for those names |
 
@@ -558,37 +558,37 @@ WP-CLI subcommands cover operators who run the plugin headless:
 
 ```bash
 # List options (accessor / autoload / size / last_read columns).
-wp optrion list --format=table
+wp orpharion list --format=table
 
 # Show only options owned by inactive plugins/themes.
-wp optrion list --inactive-only
+wp orpharion list --inactive-only
 
 # Filter by accessor type.
-wp optrion list --accessor-type=plugin
+wp orpharion list --accessor-type=plugin
 
 # Summary stats.
-wp optrion stats
+wp orpharion stats
 
 # Export options owned by inactive plugins/themes.
-wp optrion export --inactive-only --output=backup.json
+wp orpharion export --inactive-only --output=backup.json
 
 # Export by explicit name list.
-wp optrion export --names=opt_a,opt_b --output=backup.json
+wp orpharion export --names=opt_a,opt_b --output=backup.json
 
 # Import JSON (dry run).
-wp optrion import backup.json --dry-run
+wp orpharion import backup.json --dry-run
 
 # Import JSON (for real).
-wp optrion import backup.json
+wp orpharion import backup.json
 
 # Bulk-delete options owned by inactive plugins/themes (no server-side backup; export first if needed).
-wp optrion clean --inactive-only --i-have-a-backup --yes
+wp orpharion clean --inactive-only --i-have-a-backup --yes
 
 # Delete expired transients.
-wp optrion clean-transients
+wp orpharion clean-transients
 
 # Manual scan.
-wp optrion scan
+wp orpharion scan
 ```
 
 ---
@@ -596,8 +596,8 @@ wp optrion scan
 ## 10. File layout
 
 ```
-optrion/
-├── optrion.php                    # Main plugin file (bootstrap)
+orpharion/
+├── orpharion.php                    # Main plugin file (bootstrap)
 ├── readme.txt                     # WordPress.org-flavoured readme
 ├── uninstall.php                  # Cleanup on plugin uninstall
 │
@@ -633,7 +633,7 @@ optrion/
 │       └── AccessorChart.jsx
 │
 ├── languages/
-│   └── optrion-ja.po
+│   └── orpharion-ja.po
 │
 └── tests/
     ├── test-classifier.php

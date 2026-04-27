@@ -47,28 +47,28 @@ const Import = () => {
 	};
 
 	return (
-		<div className="optrion-import">
+		<div className="orpharion-import">
 			<p>
 				<input type="file" accept=".json,application/json" onChange={ onFile } />
 			</p>
 			<CheckboxControl
-				label={ __( 'Overwrite existing rows', 'optrion' ) }
+				label={ __( 'Overwrite existing rows', 'orpharion' ) }
 				checked={ overwrite }
 				onChange={ setOverwrite }
 			/>
-			<div className="optrion-import__actions">
+			<div className="orpharion-import__actions">
 				<Button variant="secondary" onClick={ runPreview } disabled={ ! payload || busy }>
-					{ __( 'Dry run', 'optrion' ) }
+					{ __( 'Dry run', 'orpharion' ) }
 				</Button>
 				<Button variant="primary" onClick={ runImport } disabled={ ! payload || busy }>
-					{ __( 'Import', 'optrion' ) }
+					{ __( 'Import', 'orpharion' ) }
 				</Button>
 			</div>
-			{ error && <p className="optrion-error">{ error }</p> }
+			{ error && <p className="orpharion-error">{ error }</p> }
 			{ preview && (
 				<p>
 					{ sprintf(
-						__( 'Preview — add: %1$d, overwrite: %2$d', 'optrion' ),
+						__( 'Preview — add: %1$d, overwrite: %2$d', 'orpharion' ),
 						preview.add,
 						preview.overwrite
 					) }
@@ -77,7 +77,7 @@ const Import = () => {
 			{ result && (
 				<p>
 					{ sprintf(
-						__( 'Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d', 'optrion' ),
+						__( 'Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d', 'orpharion' ),
 						result.added,
 						result.overwritten,
 						result.skipped

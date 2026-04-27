@@ -2,21 +2,21 @@
 /**
  * Quarantine module tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Quarantine;
-use Optrion\Schema;
+use Orpharion\Quarantine;
+use Orpharion\Schema;
 use WP_UnitTestCase;
 
 /**
  * Exercises the rename / restore / delete / expiry flows.
  *
- * @coversDefaultClass \Optrion\Quarantine
+ * @coversDefaultClass \Orpharion\Quarantine
  */
 class QuarantineTest extends WP_UnitTestCase {
 
@@ -65,12 +65,12 @@ class QuarantineTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Optrion's own plugin options are out of scope for quarantine so the
+	 * Orpharion's own plugin options are out of scope for quarantine so the
 	 * plugin cannot be made to rename its own configuration row.
 	 */
-	public function test_is_quarantinable_rejects_optrion_internal_namespace(): void {
-		$this->assertFalse( Quarantine::is_quarantinable( 'optrion_sampling_rate' ) );
-		$this->assertFalse( Quarantine::is_quarantinable( 'OPTRION_DB_VERSION' ) );
+	public function test_is_quarantinable_rejects_orpharion_internal_namespace(): void {
+		$this->assertFalse( Quarantine::is_quarantinable( 'orpharion_sampling_rate' ) );
+		$this->assertFalse( Quarantine::is_quarantinable( 'ORPHARION_DB_VERSION' ) );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class QuarantineTest extends WP_UnitTestCase {
 	public function test_quarantine_rejects_core_options(): void {
 		$result = Quarantine::quarantine( 'siteurl' );
 		$this->assertWPError( $result );
-		$this->assertSame( 'optrion_not_quarantinable', $result->get_error_code() );
+		$this->assertSame( 'orpharion_not_quarantinable', $result->get_error_code() );
 	}
 
 	/**
@@ -120,7 +120,7 @@ class QuarantineTest extends WP_UnitTestCase {
 	public function test_quarantine_rejects_missing_option(): void {
 		$result = Quarantine::quarantine( 'nonexistent_option_xyz' );
 		$this->assertWPError( $result );
-		$this->assertSame( 'optrion_option_missing', $result->get_error_code() );
+		$this->assertSame( 'orpharion_option_missing', $result->get_error_code() );
 	}
 
 	/**
@@ -196,7 +196,7 @@ class QuarantineTest extends WP_UnitTestCase {
 
 		$second = Quarantine::restore( (int) $id );
 		$this->assertWPError( $second );
-		$this->assertSame( 'optrion_not_active', $second->get_error_code() );
+		$this->assertSame( 'orpharion_not_active', $second->get_error_code() );
 	}
 
 	/**
@@ -321,7 +321,7 @@ class QuarantineTest extends WP_UnitTestCase {
 
 		$result = Quarantine::delete_permanently( (int) $id );
 		$this->assertWPError( $result );
-		$this->assertSame( 'optrion_still_accessed', $result->get_error_code() );
+		$this->assertSame( 'orpharion_still_accessed', $result->get_error_code() );
 	}
 
 	/**

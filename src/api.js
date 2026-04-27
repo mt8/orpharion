@@ -1,11 +1,11 @@
 /**
- * Thin wrapper around @wordpress/api-fetch scoped to the Optrion namespace.
+ * Thin wrapper around @wordpress/api-fetch scoped to the Orpharion namespace.
  */
 
 import apiFetch from '@wordpress/api-fetch';
 
-const config = window.optrionConfig || {};
-const NAMESPACE = ( config.restNamespace || 'optrion/v1' ).replace( /^\/|\/$/g, '' );
+const config = window.orpharionConfig || {};
+const NAMESPACE = ( config.restNamespace || 'orpharion/v1' ).replace( /^\/|\/$/g, '' );
 
 if ( config.nonce ) {
 	apiFetch.use( apiFetch.createNonceMiddleware( config.nonce ) );

@@ -1,11 +1,11 @@
 <?php
 /**
- * Optrion uninstall script.
+ * Orpharion uninstall script.
  *
  * Runs when the plugin is deleted from the WordPress admin. Drops every
  * artifact the plugin installs so no orphan data remains on the site.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
@@ -13,11 +13,11 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 /**
  * Runs the uninstall cleanup. Wrapped so the top-level file scope stays clean.
  */
-function optrion_run_uninstall(): void {
+function orpharion_run_uninstall(): void {
 	global $wpdb;
 
 	$quarantine_table = $wpdb->prefix . 'options_quarantine';
-	$rename_prefix    = '_optrion_q__';
+	$rename_prefix    = '_orpharion_q__';
 
 	// Restore any currently active quarantine renames so we do not orphan
 	// renamed wp_options rows when the manifest table is dropped. The
@@ -61,18 +61,18 @@ function optrion_run_uninstall(): void {
 	}
 
 	// Delete plugin options and transients.
-	delete_option( 'optrion_db_version' );
-	delete_option( 'optrion_sampling_rate' );
-	delete_option( 'optrion_quarantine_expiry_days' );
-	delete_option( 'optrion_quarantine_expiry_action' );
-	delete_transient( 'optrion_tracking_enabled' );
+	delete_option( 'orpharion_db_version' );
+	delete_option( 'orpharion_sampling_rate' );
+	delete_option( 'orpharion_quarantine_expiry_days' );
+	delete_option( 'orpharion_quarantine_expiry_action' );
+	delete_transient( 'orpharion_tracking_enabled' );
 
 	// Clear the cron job.
-	$timestamp = wp_next_scheduled( 'optrion_quarantine_check' );
+	$timestamp = wp_next_scheduled( 'orpharion_quarantine_check' );
 	if ( false !== $timestamp ) {
-		wp_unschedule_event( $timestamp, 'optrion_quarantine_check' );
+		wp_unschedule_event( $timestamp, 'orpharion_quarantine_check' );
 	}
-	wp_clear_scheduled_hook( 'optrion_quarantine_check' );
+	wp_clear_scheduled_hook( 'orpharion_quarantine_check' );
 }
 
-optrion_run_uninstall();
+orpharion_run_uninstall();

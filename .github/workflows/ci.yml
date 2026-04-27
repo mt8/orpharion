@@ -63,8 +63,8 @@ jobs:
 
       - name: Prepare plugin directory
         run: |
-          mkdir -p /tmp/plugin-check/optrion
-          rsync -a ./ /tmp/plugin-check/optrion/ \
+          mkdir -p /tmp/plugin-check/orpharion
+          rsync -a ./ /tmp/plugin-check/orpharion/ \
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='.github' \
@@ -80,7 +80,7 @@ jobs:
 
       - uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: '/tmp/plugin-check/optrion'
+          build-dir: '/tmp/plugin-check/orpharion'
           ignore-warnings: true
 
   phpunit:

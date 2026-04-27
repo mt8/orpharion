@@ -2,20 +2,20 @@
 /**
  * Schema installer tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Schema;
+use Orpharion\Schema;
 use WP_UnitTestCase;
 
 /**
  * Verifies that Schema::install() creates the expected custom tables.
  *
- * @coversDefaultClass \Optrion\Schema
+ * @coversDefaultClass \Orpharion\Schema
  */
 class SchemaTest extends WP_UnitTestCase {
 
@@ -93,7 +93,7 @@ class SchemaTest extends WP_UnitTestCase {
 		$listener = static function () use ( &$count ): void {
 			++$count;
 		};
-		add_action( 'optrion_schema_installed', $listener );
+		add_action( 'orpharion_schema_installed', $listener );
 		return static function () use ( &$count ): int {
 			return $count;
 		};

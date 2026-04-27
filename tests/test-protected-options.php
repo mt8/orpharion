@@ -2,21 +2,21 @@
 /**
  * ProtectedOptions helper tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\ProtectedOptions;
-use Optrion\Quarantine;
+use Orpharion\ProtectedOptions;
+use Orpharion\Quarantine;
 use WP_UnitTestCase;
 
 /**
  * Covers the central protected-namespace rule set.
  *
- * @coversDefaultClass \Optrion\ProtectedOptions
+ * @coversDefaultClass \Orpharion\ProtectedOptions
  */
 class ProtectedOptionsTest extends WP_UnitTestCase {
 
@@ -31,13 +31,13 @@ class ProtectedOptionsTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Optrion's own plugin-option namespace is covered.
+	 * Orpharion's own plugin-option namespace is covered.
 	 */
 	public function test_internal_namespace_is_protected(): void {
-		$this->assertTrue( ProtectedOptions::is_internal( 'optrion_sampling_rate' ) );
-		$this->assertTrue( ProtectedOptions::is_internal( 'OPTRION_DB_VERSION' ) );
-		$this->assertTrue( ProtectedOptions::is_protected( 'Optrion_Internal ' ) );
-		$this->assertFalse( ProtectedOptions::is_internal( 'my_plugin_optrion_setting' ) );
+		$this->assertTrue( ProtectedOptions::is_internal( 'orpharion_sampling_rate' ) );
+		$this->assertTrue( ProtectedOptions::is_internal( 'ORPHARION_DB_VERSION' ) );
+		$this->assertTrue( ProtectedOptions::is_protected( 'Orpharion_Internal ' ) );
+		$this->assertFalse( ProtectedOptions::is_internal( 'my_plugin_orpharion_setting' ) );
 	}
 
 	/**
@@ -63,7 +63,7 @@ class ProtectedOptionsTest extends WP_UnitTestCase {
 	 */
 	public function test_protected_reason_returns_a_message_per_category(): void {
 		$this->assertNotNull( ProtectedOptions::protected_reason( 'siteurl' ) );
-		$this->assertNotNull( ProtectedOptions::protected_reason( 'optrion_sampling_rate' ) );
+		$this->assertNotNull( ProtectedOptions::protected_reason( 'orpharion_sampling_rate' ) );
 		$this->assertNotNull(
 			ProtectedOptions::protected_reason( Quarantine::RENAME_PREFIX . 'x' )
 		);
@@ -79,7 +79,7 @@ class ProtectedOptionsTest extends WP_UnitTestCase {
 		$this->assertCount( 2, $fragments );
 		$joined = implode( ' ', $fragments );
 		$this->assertStringContainsString( 'option_name NOT LIKE', $joined );
-		$this->assertStringContainsString( '\\_optrion\\_q\\_\\_', $joined );
-		$this->assertStringContainsString( 'optrion\\_', $joined );
+		$this->assertStringContainsString( '\\_orpharion\\_q\\_\\_', $joined );
+		$this->assertStringContainsString( 'orpharion\\_', $joined );
 	}
 }

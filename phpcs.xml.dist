@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="Optrion">
-	<description>Coding standards for the Optrion plugin.</description>
+<ruleset name="Orpharion">
+	<description>Coding standards for the Orpharion plugin.</description>
 
-	<file>optrion.php</file>
+	<file>orpharion.php</file>
 	<file>uninstall.php</file>
 	<file>includes/</file>
 	<file>tests/</file>
@@ -32,7 +32,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="optrion"/>
+				<element value="orpharion"/>
 			</property>
 		</properties>
 	</rule>
@@ -40,9 +40,9 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
-				<element value="optrion"/>
-				<element value="Optrion"/>
-				<element value="OPTRION"/>
+				<element value="orpharion"/>
+				<element value="Orpharion"/>
+				<element value="ORPHARION"/>
 			</property>
 		</properties>
 	</rule>

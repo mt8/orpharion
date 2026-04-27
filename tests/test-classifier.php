@@ -2,20 +2,20 @@
 /**
  * Classifier tests.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion\Tests;
+namespace Orpharion\Tests;
 
-use Optrion\Classifier;
+use Orpharion\Classifier;
 use WP_UnitTestCase;
 
 /**
  * Covers accessor inference, active-flag resolution, and display-name lookup.
  *
- * @coversDefaultClass \Optrion\Classifier
+ * @coversDefaultClass \Orpharion\Classifier
  */
 class ClassifierTest extends WP_UnitTestCase {
 

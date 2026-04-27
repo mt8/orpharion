@@ -2,12 +2,12 @@
 /**
  * REST API controller.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 use WP_Error;
 use WP_REST_Request;
@@ -17,14 +17,14 @@ use WP_REST_Server;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the `/wp-json/optrion/v1/*` endpoints described in docs/DESIGN.md §5.
+ * Registers the `/wp-json/orpharion/v1/*` endpoints described in docs/DESIGN.md §5.
  */
 final class Rest_Controller {
 
 	/**
 	 * REST namespace used for every route.
 	 */
-	public const NAMESPACE_V1 = 'optrion/v1';
+	public const NAMESPACE_V1 = 'orpharion/v1';
 
 	/**
 	 * Wires all routes on the `rest_api_init` hook.
@@ -255,9 +255,9 @@ final class Rest_Controller {
 
 		$where  = array();
 		$params = array();
-		// Transients are managed by the Transient API and are out of scope for Optrion.
+		// Transients are managed by the Transient API and are out of scope for Orpharion.
 		$where[] = "option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
-		// Quarantine-managed rows and Optrion's own internal options are
+		// Quarantine-managed rows and Orpharion's own internal options are
 		// derived from the same `ProtectedOptions` source of truth used by
 		// the destructive modules.
 		foreach ( ProtectedOptions::not_like_fragments() as $fragment ) {
@@ -345,7 +345,7 @@ final class Rest_Controller {
 		);
 		// phpcs:enable
 		if ( ! is_array( $row ) ) {
-			return new WP_Error( 'optrion_not_found', __( 'Option not found.', 'optrion' ), array( 'status' => 404 ) );
+			return new WP_Error( 'orpharion_not_found', __( 'Option not found.', 'orpharion' ), array( 'status' => 404 ) );
 		}
 		$size     = strlen( (string) $row['option_value'] );
 		$tracking = self::tracking_map( array( $name ) )[ $name ] ?? null;

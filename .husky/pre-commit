@@ -10,7 +10,7 @@ WP_ENV_HASH=$(node -e "const c=require('crypto');console.log(c.createHash('md5')
 WP_ENV_DIR="$HOME/.wp-env/$WP_ENV_HASH"
 
 if [ -n "$WP_ENV_HASH" ] && [ -f "$WP_ENV_DIR/docker-compose.yml" ] && command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-	if npx --no-install wp-env run tests-cli --env-cwd=wp-content/plugins/optrion composer test; then
+	if npx --no-install wp-env run tests-cli --env-cwd=wp-content/plugins/orpharion composer test; then
 		:
 	else
 		echo "✖ PHPUnit failed. Commit aborted."

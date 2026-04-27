@@ -1,16 +1,16 @@
-.optrion-title {
+.orpharion-title {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 
-	.optrion-title__logo {
+	.orpharion-title__logo {
 		width: 32px;
 		height: 32px;
 		flex: 0 0 auto;
 	}
 }
 
-.optrion-table-scroll {
+.orpharion-table-scroll {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
 	width: 100%;
@@ -20,34 +20,34 @@
 	}
 }
 
-.optrion-app {
+.orpharion-app {
 	margin-top: 16px;
 
-	.optrion-tabs {
+	.orpharion-tabs {
 		margin-bottom: 16px;
 	}
 
-	.optrion-tab-panel {
+	.orpharion-tab-panel {
 		background: #fff;
 		border: 1px solid #c3c4c7;
 		border-radius: 0 4px 4px 4px;
 		padding: 16px 20px;
 	}
 
-	.optrion-error {
+	.orpharion-error {
 		color: #b32d2e;
 		background: #fcf0f1;
 		padding: 8px 12px;
 		border-left: 4px solid #b32d2e;
 	}
 
-	.optrion-cards {
+	.orpharion-cards {
 		display: flex;
 		gap: 12px;
 		flex-wrap: wrap;
 	}
 
-	.optrion-card {
+	.orpharion-card {
 		flex: 1 1 200px;
 		border: 1px solid #dcdcde;
 		border-radius: 4px;
@@ -66,7 +66,7 @@
 		}
 	}
 
-	.optrion-filters {
+	.orpharion-filters {
 		display: flex;
 		gap: 12px;
 		align-items: flex-end;
@@ -78,7 +78,7 @@
 		}
 	}
 
-	.optrion-bulk {
+	.orpharion-bulk {
 		display: flex;
 		gap: 8px;
 		align-items: center;
@@ -92,7 +92,7 @@
 		}
 	}
 
-	.optrion-pager {
+	.orpharion-pager {
 		display: flex;
 		gap: 12px;
 		align-items: center;
@@ -121,12 +121,12 @@
 		}
 	}
 
-	.optrion-accessor-type {
+	.orpharion-accessor-type {
 		color: #646970;
 		font-size: 11px;
 	}
 
-	.optrion-badge {
+	.orpharion-badge {
 		display: inline-block;
 		margin-left: 6px;
 		padding: 1px 6px;
@@ -137,21 +137,21 @@
 		letter-spacing: 0.03em;
 	}
 
-	.optrion-badge--protected {
+	.orpharion-badge--protected {
 		background: #dcdcde;
 		color: #3c434a;
 	}
 
-	.optrion-badge--warning {
+	.orpharion-badge--warning {
 		background: #fcf0e3;
 		color: #8a6d3b;
 	}
 
-	.optrion-row--protected td {
+	.orpharion-row--protected td {
 		color: #646970;
 	}
 
-	.optrion-sort-button {
+	.orpharion-sort-button {
 		background: none;
 		border: 0;
 		padding: 0;
@@ -169,17 +169,17 @@
 		}
 	}
 
-	.optrion-badge--inactive {
+	.orpharion-badge--inactive {
 		background: #fde2e2;
 		color: #8a1f11;
 	}
-	.optrion-badge--autoload {
+	.orpharion-badge--autoload {
 		background: #e7f0fa;
 		color: #2a5ca0;
 	}
-	.optrion-muted { color: #646970; }
+	.orpharion-muted { color: #646970; }
 
-	.optrion-import__actions {
+	.orpharion-import__actions {
 		display: flex;
 		gap: 8px;
 		margin: 12px 0;

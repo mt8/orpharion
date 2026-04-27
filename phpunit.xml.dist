@@ -18,7 +18,7 @@
 	verbose="true"
 	>
 	<testsuites>
-		<testsuite name="optrion">
+		<testsuite name="orpharion">
 			<directory suffix=".php">tests/</directory>
 			<exclude>tests/bootstrap.php</exclude>
 		</testsuite>
@@ -26,7 +26,7 @@
 	<coverage>
 		<include>
 			<directory suffix=".php">includes/</directory>
-			<file>optrion.php</file>
+			<file>orpharion.php</file>
 		</include>
 	</coverage>
 </phpunit>

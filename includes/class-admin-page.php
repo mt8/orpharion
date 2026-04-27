@@ -2,32 +2,32 @@
 /**
  * Admin page registration and SPA mount point.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Adds the top-level "Optrion" admin menu and enqueues the React app bundle.
+ * Adds the top-level "Orpharion" admin menu and enqueues the React app bundle.
  */
 final class Admin_Page {
 
 	/**
 	 * Slug used for the admin page hook and menu entry.
 	 */
-	public const MENU_SLUG = 'optrion';
+	public const MENU_SLUG = 'orpharion';
 
 	/**
 	 * DOM id that the React app mounts into.
 	 */
-	public const ROOT_ID = 'optrion-admin-root';
+	public const ROOT_ID = 'orpharion-admin-root';
 
 	/**
-	 * Hook suffix produced by add_menu_page() for the Optrion screen.
+	 * Hook suffix produced by add_menu_page() for the Orpharion screen.
 	 */
 	public const HOOK_SUFFIX = 'toplevel_page_' . self::MENU_SLUG;
 
@@ -41,12 +41,12 @@ final class Admin_Page {
 	}
 
 	/**
-	 * Adds the top-level Optrion menu with its branded icon.
+	 * Adds the top-level Orpharion menu with its branded icon.
 	 */
 	public static function add_menu(): void {
 		add_menu_page(
-			__( 'Optrion', 'optrion' ),
-			__( 'Optrion', 'optrion' ),
+			__( 'Orpharion', 'orpharion' ),
+			__( 'Orpharion', 'orpharion' ),
 			'manage_options',
 			self::MENU_SLUG,
 			array( self::class, 'render' ),
@@ -79,9 +79,9 @@ final class Admin_Page {
 	 * @return string
 	 */
 	private static function menu_icon(): string {
-		$icon_path = OPTRION_DIR . 'assets/optrion-menu-icon.svg';
+		$icon_path = ORPHARION_DIR . 'assets/orpharion-menu-icon.svg';
 		if ( is_readable( $icon_path ) ) {
-			return OPTRION_URL . 'assets/optrion-menu-icon.svg';
+			return ORPHARION_URL . 'assets/orpharion-menu-icon.svg';
 		}
 		return 'dashicons-admin-generic';
 	}
@@ -91,18 +91,18 @@ final class Admin_Page {
 	 */
 	public static function render(): void {
 		echo '<div class="wrap">';
-		echo '<h1 class="optrion-title">';
-		echo '<img class="optrion-title__logo" src="' . esc_url( OPTRION_URL . 'assets/optrion-icon.svg' ) . '" alt="" />';
-		echo '<span>' . esc_html__( 'Optrion', 'optrion' ) . '</span>';
+		echo '<h1 class="orpharion-title">';
+		echo '<img class="orpharion-title__logo" src="' . esc_url( ORPHARION_URL . 'assets/orpharion-icon.svg' ) . '" alt="" />';
+		echo '<span>' . esc_html__( 'Orpharion', 'orpharion' ) . '</span>';
 		echo '</h1>';
 		echo '<div id="' . esc_attr( self::ROOT_ID ) . '">';
-		echo '<p>' . esc_html__( 'Loading Optrion…', 'optrion' ) . '</p>';
+		echo '<p>' . esc_html__( 'Loading Orpharion…', 'orpharion' ) . '</p>';
 		echo '</div>';
 		echo '</div>';
 	}
 
 	/**
-	 * Enqueues the React bundle on the Optrion admin screen only.
+	 * Enqueues the React bundle on the Orpharion admin screen only.
 	 *
 	 * @param string $hook_suffix Current admin page hook.
 	 */
@@ -111,14 +111,14 @@ final class Admin_Page {
 			return;
 		}
 
-		$asset_file = OPTRION_DIR . 'build/index.asset.php';
+		$asset_file = ORPHARION_DIR . 'build/index.asset.php';
 		if ( ! file_exists( $asset_file ) ) {
 			// Build has not been produced yet; surface a notice and bail.
 			add_action(
 				'admin_notices',
 				static function () {
 					echo '<div class="notice notice-warning"><p>';
-					echo esc_html__( 'Optrion admin UI build not found. Run `npm run build` in the plugin directory.', 'optrion' );
+					echo esc_html__( 'Orpharion admin UI build not found. Run `npm run build` in the plugin directory.', 'orpharion' );
 					echo '</p></div>';
 				}
 			);
@@ -127,29 +127,29 @@ final class Admin_Page {
 
 		$asset = include $asset_file;
 		$deps  = isset( $asset['dependencies'] ) && is_array( $asset['dependencies'] ) ? $asset['dependencies'] : array();
-		$ver   = isset( $asset['version'] ) ? (string) $asset['version'] : OPTRION_VERSION;
+		$ver   = isset( $asset['version'] ) ? (string) $asset['version'] : ORPHARION_VERSION;
 
 		wp_enqueue_script(
-			'optrion-admin',
-			OPTRION_URL . 'build/index.js',
+			'orpharion-admin',
+			ORPHARION_URL . 'build/index.js',
 			$deps,
 			$ver,
 			true
 		);
-		wp_set_script_translations( 'optrion-admin', 'optrion', OPTRION_DIR . 'languages' );
+		wp_set_script_translations( 'orpharion-admin', 'orpharion', ORPHARION_DIR . 'languages' );
 
-		if ( file_exists( OPTRION_DIR . 'build/index.css' ) ) {
+		if ( file_exists( ORPHARION_DIR . 'build/index.css' ) ) {
 			wp_enqueue_style(
-				'optrion-admin',
-				OPTRION_URL . 'build/index.css',
+				'orpharion-admin',
+				ORPHARION_URL . 'build/index.css',
 				array(),
 				$ver
 			);
 		}
 
 		wp_localize_script(
-			'optrion-admin',
-			'optrionConfig',
+			'orpharion-admin',
+			'orpharionConfig',
 			array(
 				'restNamespace' => Rest_Controller::NAMESPACE_V1,
 				'restRoot'      => esc_url_raw( rest_url( Rest_Controller::NAMESPACE_V1 . '/' ) ),

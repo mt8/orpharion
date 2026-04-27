@@ -2,12 +2,12 @@
 /**
  * Accessor inference and site-context helpers for wp_options rows.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 defined( 'ABSPATH' ) || exit;
 

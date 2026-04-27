@@ -2,12 +2,12 @@
 /**
  * Quarantine module.
  *
- * @package Optrion
+ * @package Orpharion
  */
 
 declare(strict_types=1);
 
-namespace Optrion;
+namespace Orpharion;
 
 use WP_Error;
 
@@ -24,7 +24,7 @@ final class Quarantine {
 	/**
 	 * Rename prefix applied to quarantined option rows.
 	 */
-	public const RENAME_PREFIX = '_optrion_q__';
+	public const RENAME_PREFIX = '_orpharion_q__';
 
 	/**
 	 * Status of a manifest row when it is actively holding a renamed option.
@@ -62,12 +62,12 @@ final class Quarantine {
 	/**
 	 * Option key: number of days until auto-expiry.
 	 */
-	public const EXPIRY_DAYS_OPTION = 'optrion_quarantine_expiry_days';
+	public const EXPIRY_DAYS_OPTION = 'orpharion_quarantine_expiry_days';
 
 	/**
 	 * Option key: action on expiry (`restore`, `delete`, or `keep`).
 	 */
-	public const EXPIRY_ACTION_OPTION = 'optrion_quarantine_expiry_action';
+	public const EXPIRY_ACTION_OPTION = 'orpharion_quarantine_expiry_action';
 
 	/**
 	 * In-memory cache of active-quarantine values keyed by original_name.
@@ -100,7 +100,7 @@ final class Quarantine {
 	/**
 	 * Cron hook that runs the daily expiry sweep.
 	 */
-	public const CRON_HOOK = 'optrion_quarantine_check';
+	public const CRON_HOOK = 'orpharion_quarantine_check';
 
 	/**
 	 * Moves an option into quarantine.
@@ -113,15 +113,15 @@ final class Quarantine {
 	 */
 	public static function quarantine( string $option_name, int $user_id = 0, int $expires_days = 0 ) {
 		if ( ! self::is_quarantinable( $option_name ) ) {
-			return new WP_Error( 'optrion_not_quarantinable', self::reason_cannot_quarantine( $option_name ) );
+			return new WP_Error( 'orpharion_not_quarantinable', self::reason_cannot_quarantine( $option_name ) );
 		}
 
 		if ( self::active_count() >= self::MAX_ACTIVE_QUARANTINES ) {
 			return new WP_Error(
-				'optrion_quarantine_full',
+				'orpharion_quarantine_full',
 				sprintf(
 					/* translators: %d: maximum number of simultaneous quarantines. */
-					__( 'Quarantine limit reached (%d active).', 'optrion' ),
+					__( 'Quarantine limit reached (%d active).', 'orpharion' ),
 					self::MAX_ACTIVE_QUARANTINES
 				)
 			);
@@ -133,7 +133,7 @@ final class Quarantine {
 			$wpdb->prepare( "SELECT autoload FROM {$wpdb->options} WHERE option_name = %s", $option_name )
 		);
 		if ( null === $autoload ) {
-			return new WP_Error( 'optrion_option_missing', __( 'Option not found in wp_options.', 'optrion' ) );
+			return new WP_Error( 'orpharion_option_missing', __( 'Option not found in wp_options.', 'orpharion' ) );
 		}
 
 		$renamed = self::RENAME_PREFIX . $option_name;
@@ -152,7 +152,7 @@ final class Quarantine {
 		// phpcs:enable
 
 		if ( false === $updated || 0 === $updated ) {
-			return new WP_Error( 'optrion_rename_failed', __( 'Could not rename the option row.', 'optrion' ) );
+			return new WP_Error( 'orpharion_rename_failed', __( 'Could not rename the option row.', 'orpharion' ) );
 		}
 
 		wp_cache_delete( $option_name, 'options' );
@@ -202,7 +202,7 @@ final class Quarantine {
 				array( '%s', '%s' ),
 				array( '%s' )
 			);
-			return new WP_Error( 'optrion_manifest_failed', __( 'Could not record the quarantine manifest.', 'optrion' ) );
+			return new WP_Error( 'orpharion_manifest_failed', __( 'Could not record the quarantine manifest.', 'orpharion' ) );
 		}
 
 		// Prime the transparent-read filter for the remainder of the request so
@@ -232,10 +232,10 @@ final class Quarantine {
 	public static function restore( int $manifest_id ) {
 		$manifest = self::get_manifest( $manifest_id );
 		if ( null === $manifest ) {
-			return new WP_Error( 'optrion_manifest_missing', __( 'Quarantine manifest row not found.', 'optrion' ) );
+			return new WP_Error( 'orpharion_manifest_missing', __( 'Quarantine manifest row not found.', 'orpharion' ) );
 		}
 		if ( self::STATUS_ACTIVE !== $manifest['status'] ) {
-			return new WP_Error( 'optrion_not_active', __( 'Quarantine entry is not active.', 'optrion' ) );
+			return new WP_Error( 'orpharion_not_active', __( 'Quarantine entry is not active.', 'orpharion' ) );
 		}
 
 		global $wpdb;
@@ -272,7 +272,7 @@ final class Quarantine {
 				array( '%s' )
 			);
 			if ( false === $updated || 0 === $updated ) {
-				return new WP_Error( 'optrion_restore_failed', __( 'Could not rename the option row back.', 'optrion' ) );
+				return new WP_Error( 'orpharion_restore_failed', __( 'Could not rename the option row back.', 'orpharion' ) );
 			}
 		}
 
@@ -308,17 +308,17 @@ final class Quarantine {
 	public static function delete_permanently( int $manifest_id ) {
 		$manifest = self::get_manifest( $manifest_id );
 		if ( null === $manifest ) {
-			return new WP_Error( 'optrion_manifest_missing', __( 'Quarantine manifest row not found.', 'optrion' ) );
+			return new WP_Error( 'orpharion_manifest_missing', __( 'Quarantine manifest row not found.', 'orpharion' ) );
 		}
 		if ( self::STATUS_ACTIVE !== $manifest['status'] ) {
-			return new WP_Error( 'optrion_not_active', __( 'Quarantine entry is not active.', 'optrion' ) );
+			return new WP_Error( 'orpharion_not_active', __( 'Quarantine entry is not active.', 'orpharion' ) );
 		}
 
 		// Block deletion when tracking shows the option was read after quarantine.
 		if ( self::is_still_accessed( $manifest ) ) {
 			return new WP_Error(
-				'optrion_still_accessed',
-				__( 'This option is still being accessed. Restore it instead of deleting.', 'optrion' )
+				'orpharion_still_accessed',
+				__( 'This option is still being accessed. Restore it instead of deleting.', 'orpharion' )
 			);
 		}
 
@@ -332,7 +332,7 @@ final class Quarantine {
 			array( '%s' )
 		);
 		if ( false === $deleted ) {
-			return new WP_Error( 'optrion_delete_failed', __( 'Could not delete the quarantined option row.', 'optrion' ) );
+			return new WP_Error( 'orpharion_delete_failed', __( 'Could not delete the quarantined option row.', 'orpharion' ) );
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -525,7 +525,7 @@ final class Quarantine {
 	 * Installs `pre_option_{name}` filters for every active quarantine.
 	 *
 	 * Called once per request from {@see Plugin::boot()}. Each filter
-	 * returns the value of the renamed `_optrion_q__<name>` row so that
+	 * returns the value of the renamed `_orpharion_q__<name>` row so that
 	 * calls to `get_option()` during the window behave as if the option
 	 * had never been quarantined. Every hit is buffered and flushed to
 	 * the manifest at shutdown, giving us an observational record of who
@@ -674,20 +674,20 @@ final class Quarantine {
 	 */
 	private static function reason_cannot_quarantine( string $option_name ): string {
 		if ( '' === $option_name ) {
-			return __( 'Option name is empty.', 'optrion' );
+			return __( 'Option name is empty.', 'orpharion' );
 		}
 		if ( ProtectedOptions::is_quarantine_rename( $option_name ) ) {
-			return __( 'Option is already quarantined.', 'optrion' );
+			return __( 'Option is already quarantined.', 'orpharion' );
 		}
 		if ( strlen( $option_name ) > self::MAX_ORIGINAL_LENGTH ) {
-			return __( 'Option name is too long to safely quarantine.', 'optrion' );
+			return __( 'Option name is too long to safely quarantine.', 'orpharion' );
 		}
 		if ( ProtectedOptions::is_core( $option_name ) ) {
-			return __( 'WordPress core options cannot be quarantined.', 'optrion' );
+			return __( 'WordPress core options cannot be quarantined.', 'orpharion' );
 		}
 		if ( ProtectedOptions::is_internal( $option_name ) ) {
-			return __( 'Optrion internal options cannot be quarantined.', 'optrion' );
+			return __( 'Orpharion internal options cannot be quarantined.', 'orpharion' );
 		}
-		return __( 'Option cannot be quarantined.', 'optrion' );
+		return __( 'Option cannot be quarantined.', 'orpharion' );
 	}
 }
