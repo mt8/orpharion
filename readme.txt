@@ -4,7 +4,7 @@ Tags: options, database, cleanup, performance, autoload
 Requires at least: 6.8
 Tested up to: 6.9
 Requires PHP: 8.3
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,9 @@ Uninstalling restores any active quarantines to their original names, drops the 
 The orpharion is a Renaissance plucked-string instrument invented in England in 1581 by John Rose. The name is a 16th-century coinage from Orpheus and Arion, two legendary musicians of Greek mythology. Music by John Dowland, William Byrd, and others was published for it. The plugin borrows the name as a nod to the idea of carefully tuning what sits in your `wp_options` table.
 
 == Changelog ==
+
+= 1.1.1 =
+* WP-CLI: `wp orpharion export --output=<file>` now requires a bare `*.json` filename and always writes into `wp-content/uploads/orpharion/`. Absolute or relative paths and non-`.json` extensions are rejected so option_value content (which can include API keys, SMTP credentials, and other secrets) cannot be written to a web-accessible location. The export directory is created on demand with `index.html` and `.htaccess` so it is not browseable.
 
 = 1.1.0 =
 * Renamed the plugin from "Optrion" to "Orpharion" to remove an external trademark conflict before the WordPress.org review. The slug, text domain, REST namespace, WP-CLI command, internal option keys, hooks, and the quarantine rename prefix all move from `optrion`/`optrion_` to `orpharion`/`orpharion_`. There is no in-place migration: this is a one-shot rename done before any wp.org release.

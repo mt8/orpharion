@@ -141,8 +141,10 @@ final class CLI_Command {
 	 * [--inactive-only]
 	 * : Export all options whose accessor is an inactive plugin/theme.
 	 *
-	 * [--output=<path>]
-	 * : Destination file. Defaults to stdout.
+	 * [--output=<filename>]
+	 * : Destination filename. Must be a bare `*.json` filename (no
+	 * directory component); the file always lands in
+	 * `wp-content/uploads/orpharion/`. Defaults to stdout.
 	 *
 	 * @param array<int,string>    $args       Positional args.
 	 * @param array<string,string> $assoc_args Named args.
@@ -164,11 +166,15 @@ final class CLI_Command {
 
 		$json = Exporter::to_json( $names );
 		if ( isset( $assoc_args['output'] ) ) {
-			$written = file_put_contents( (string) $assoc_args['output'], $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-			if ( false === $written ) {
-				WP_CLI::error( 'Could not write to ' . (string) $assoc_args['output'] );
+			$path = Exporter::resolve_export_path( (string) $assoc_args['output'] );
+			if ( is_wp_error( $path ) ) {
+				WP_CLI::error( $path->get_error_message() );
 			}
-			WP_CLI::success( sprintf( 'Exported %d option(s) to %s.', count( $names ), (string) $assoc_args['output'] ) );
+			$written = file_put_contents( $path, $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			if ( false === $written ) {
+				WP_CLI::error( 'Could not write to ' . $path );
+			}
+			WP_CLI::success( sprintf( 'Exported %d option(s) to %s.', count( $names ), $path ) );
 			return;
 		}
 		WP_CLI::log( $json );

@@ -105,6 +105,64 @@ class ExporterImporterTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Bare *.json filenames resolve to the orpharion subdir of uploads/.
+	 */
+	public function test_resolve_export_path_accepts_bare_json_filename(): void {
+		$path = Exporter::resolve_export_path( 'data.json' );
+		$this->assertIsString( $path );
+		$basedir = (string) wp_upload_dir( null, false )['basedir'];
+		$this->assertSame( rtrim( $basedir, '/' ) . '/orpharion/data.json', $path );
+		$this->assertDirectoryExists( rtrim( $basedir, '/' ) . '/orpharion' );
+		$this->assertFileExists( rtrim( $basedir, '/' ) . '/orpharion/index.html' );
+		$this->assertFileExists( rtrim( $basedir, '/' ) . '/orpharion/.htaccess' );
+	}
+
+	/**
+	 * Absolute paths are rejected so option_value cannot be written outside uploads/.
+	 */
+	public function test_resolve_export_path_rejects_absolute_path(): void {
+		$result = Exporter::resolve_export_path( '/tmp/exported.json' );
+		$this->assertWPError( $result );
+		$this->assertSame( 'orpharion_export_path_with_directory', $result->get_error_code() );
+	}
+
+	/**
+	 * Path-traversal attempts are rejected.
+	 */
+	public function test_resolve_export_path_rejects_traversal(): void {
+		$result = Exporter::resolve_export_path( '../../etc/passwd.json' );
+		$this->assertWPError( $result );
+		$this->assertSame( 'orpharion_export_path_with_directory', $result->get_error_code() );
+	}
+
+	/**
+	 * Non-`.json` extensions are rejected so the file cannot be served as PHP/HTML.
+	 */
+	public function test_resolve_export_path_rejects_non_json_extension(): void {
+		$result = Exporter::resolve_export_path( 'shell.php' );
+		$this->assertWPError( $result );
+		$this->assertSame( 'orpharion_export_bad_extension', $result->get_error_code() );
+	}
+
+	/**
+	 * Empty filenames are rejected.
+	 */
+	public function test_resolve_export_path_rejects_empty(): void {
+		$result = Exporter::resolve_export_path( '' );
+		$this->assertWPError( $result );
+		$this->assertSame( 'orpharion_export_empty_name', $result->get_error_code() );
+	}
+
+	/**
+	 * Characters that sanitize_file_name() would strip are rejected.
+	 */
+	public function test_resolve_export_path_rejects_unsafe_characters(): void {
+		$result = Exporter::resolve_export_path( "evil\0.json" );
+		$this->assertWPError( $result );
+		$this->assertSame( 'orpharion_export_invalid_name', $result->get_error_code() );
+	}
+
+	/**
 	 * Dry-run counts inserts vs overwrites without touching the DB.
 	 */
 	public function test_dry_run_counts(): void {
