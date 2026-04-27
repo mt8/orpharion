@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Orpharion;
 
+use WP_Error;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -67,6 +69,93 @@ final class Exporter {
 	public static function to_json( array $option_names ): string {
 		$payload = self::build_export( $option_names );
 		return (string) wp_json_encode( $payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+	}
+
+	/**
+	 * Resolves a CLI `--output` value to an absolute, writable path under
+	 * `wp-content/uploads/orpharion/`.
+	 *
+	 * Only bare `*.json` filenames are accepted. Paths that contain a
+	 * directory component are rejected so a misuse such as
+	 * `--output=/var/www/html/exports.json` cannot land option_value
+	 * payloads (which may contain API keys, SMTP credentials, etc.) in a
+	 * web-accessible location.
+	 *
+	 * @param string $filename Bare filename ending in `.json`.
+	 *
+	 * @return string|WP_Error Absolute path on success, WP_Error on rejection.
+	 */
+	public static function resolve_export_path( string $filename ) {
+		if ( '' === $filename ) {
+			return new WP_Error(
+				'orpharion_export_empty_name',
+				__( 'Export filename is empty.', 'orpharion' )
+			);
+		}
+
+		if ( basename( $filename ) !== $filename ) {
+			return new WP_Error(
+				'orpharion_export_path_with_directory',
+				__( 'Pass a bare filename. Exports always land in wp-content/uploads/orpharion/.', 'orpharion' )
+			);
+		}
+
+		$sanitized = sanitize_file_name( $filename );
+		if ( '' === $sanitized || $sanitized !== $filename ) {
+			return new WP_Error(
+				'orpharion_export_invalid_name',
+				__( 'Export filename contains characters that are not allowed.', 'orpharion' )
+			);
+		}
+
+		if ( ! str_ends_with( strtolower( $filename ), '.json' ) ) {
+			return new WP_Error(
+				'orpharion_export_bad_extension',
+				__( 'Export filename must end with .json.', 'orpharion' )
+			);
+		}
+
+		$upload = wp_upload_dir( null, false );
+		if ( ! empty( $upload['error'] ) ) {
+			return new WP_Error( 'orpharion_uploads_unavailable', (string) $upload['error'] );
+		}
+
+		$dir = self::ensure_export_dir( (string) $upload['basedir'] );
+		if ( is_wp_error( $dir ) ) {
+			return $dir;
+		}
+
+		return $dir . '/' . $filename;
+	}
+
+	/**
+	 * Creates `wp-content/uploads/orpharion/` on demand and protects it
+	 * from public listing.
+	 *
+	 * @param string $uploads_basedir Absolute path to wp_upload_dir()['basedir'].
+	 *
+	 * @return string|WP_Error Absolute export directory or an error.
+	 */
+	private static function ensure_export_dir( string $uploads_basedir ) {
+		$dir = rtrim( $uploads_basedir, '/' ) . '/orpharion';
+		if ( ! wp_mkdir_p( $dir ) ) {
+			return new WP_Error(
+				'orpharion_export_dir_create',
+				__( 'Could not create the export directory.', 'orpharion' )
+			);
+		}
+
+		// Mirror the protections WordPress core puts on its own upload tree.
+		$index = $dir . '/index.html';
+		if ( ! file_exists( $index ) ) {
+			file_put_contents( $index, '' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		}
+		$htaccess = $dir . '/.htaccess';
+		if ( ! file_exists( $htaccess ) ) {
+			file_put_contents( $htaccess, "Require all denied\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		}
+
+		return $dir;
 	}
 
 	/**

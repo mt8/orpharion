@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Orpharion 1.1.0\n"
+"Project-Id-Version: Orpharion 1.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/orpharion\n"
-"POT-Creation-Date: 2026-04-27T01:38:47+00:00\n"
+"POT-Creation-Date: 2026-04-27T02:07:42+00:00\n"
 "PO-Revision-Date: 2026-04-17T01:51:06+00:00\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -56,6 +56,29 @@ msgstr ""
 #, php-format
 msgid "Failed to delete %s."
 msgstr "%s の削除に失敗しました。"
+
+#: includes/class-exporter.php:92
+msgid "Export filename is empty."
+msgstr "エクスポートファイル名が指定されていません。"
+
+#: includes/class-exporter.php:99
+msgid ""
+"Pass a bare filename. Exports always land in wp-content/uploads/orpharion/."
+msgstr ""
+"ファイル名のみを指定してください。エクスポートファイルは常に wp-content/"
+"uploads/orpharion/ に出力されます。"
+
+#: includes/class-exporter.php:107
+msgid "Export filename contains characters that are not allowed."
+msgstr "エクスポートファイル名に使用できない文字が含まれています。"
+
+#: includes/class-exporter.php:114
+msgid "Export filename must end with .json."
+msgstr "エクスポートファイル名は .json で終わる必要があります。"
+
+#: includes/class-exporter.php:144
+msgid "Could not create the export directory."
+msgstr "エクスポート用ディレクトリを作成できませんでした。"
 
 #: includes/class-importer.php:57 includes/class-importer.php:104
 msgid "Entry missing option_name."
@@ -191,73 +214,81 @@ msgstr "このオプションは検疫できません。"
 msgid "Option not found."
 msgstr "オプションが見つかりません。"
 
-#: src/App.js:14
-msgid "Dashboard"
-msgstr ""
-
-#: src/App.js:15
-msgid "Options"
-msgstr ""
-
-#: src/App.js:16
-msgid "Quarantine"
-msgstr ""
-
-#: src/App.js:17 src/tabs/Import.jsx:64
-msgid "Import"
-msgstr "インポート"
-
-#: src/index.js:22
-msgid "Orpharion mount node not found."
-msgstr ""
-
-#: src/tabs/Dashboard.jsx:25
-msgid "Total options"
-msgstr "オプション総数"
-
-#: src/tabs/Dashboard.jsx:26
-msgid "Autoload payload"
-msgstr "自動読み込みサイズ"
-
-#: src/tabs/Import.jsx:55
-msgid "Overwrite existing rows"
-msgstr "既存行を上書きする"
-
-#: src/tabs/Import.jsx:61
-msgid "Dry run"
-msgstr "ドライラン"
-
-#: src/tabs/Import.jsx:71
-msgid "Preview — add: %1$d, overwrite: %2$d"
-msgstr "プレビュー — 追加: %1$d 件、上書き: %2$d 件"
-
-#: src/tabs/Import.jsx:80
-msgid "Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d"
-msgstr "インポート完了 — 追加: %1$d 件、上書き: %2$d 件、スキップ: %3$d 件"
-
-#: src/tabs/OptionsList.jsx:31
+#: build/index.js:1 src/tabs/OptionsList.jsx:31
 msgid "option_name"
 msgstr "option_name"
 
+#: build/index.js:1 build/index.js:9 build/index.js:12
 #: src/tabs/OptionsList.jsx:32 src/tabs/OptionsList.jsx:331
 #: src/tabs/Quarantine.jsx:92
 msgid "Accessor"
 msgstr "アクセス元"
 
-#: src/tabs/OptionsList.jsx:33
+#: build/index.js:1 src/tabs/OptionsList.jsx:33
 msgid "Autoload"
 msgstr "自動読み込み"
 
-#: src/tabs/OptionsList.jsx:34
+#: build/index.js:1 src/tabs/OptionsList.jsx:34
 msgid "Size"
 msgstr "サイズ"
 
-#: src/tabs/OptionsList.jsx:35 src/tabs/Quarantine.jsx:90
+#: build/index.js:1 build/index.js:12 src/tabs/OptionsList.jsx:35
+#: src/tabs/Quarantine.jsx:90
 msgid "Last accessed"
 msgstr "最終読み込み"
 
+#: build/index.js:1 src/App.js:14
+msgid "Dashboard"
+msgstr ""
+
+#: build/index.js:1 src/tabs/Dashboard.jsx:25
+msgid "Total options"
+msgstr "オプション総数"
+
+#: build/index.js:1 src/tabs/Dashboard.jsx:26
+msgid "Autoload payload"
+msgstr "自動読み込みサイズ"
+
+#: build/index.js:1 src/App.js:15
+msgid "Options"
+msgstr ""
+
+#: build/index.js:1 src/tabs/OptionsList.jsx:260
+msgid "Accessor plugin/theme is currently inactive."
+msgstr "アクセス元のプラグイン／テーマは現在無効化されています。"
+
+#: build/index.js:1 src/tabs/OptionsList.jsx:265
+msgid "inactive"
+msgstr "無効"
+
+#: build/index.js:1 src/tabs/OptionsList.jsx:271
+msgid "WordPress core option — cannot be selected or deleted."
+msgstr "WordPress コアオプション — 選択・削除できません。"
+
+#: build/index.js:1 src/tabs/OptionsList.jsx:276
+msgid "protected"
+msgstr "保護"
+
+#. translators: %d: number of quarantined options.
+#: build/index.js:3 src/tabs/OptionsList.jsx:195
+msgid "%d option(s) quarantined."
+msgstr "%d 件のオプションを検疫しました。"
+
+#: build/index.js:3 src/tabs/OptionsList.jsx:291
+msgid "Quarantine selected"
+msgstr "選択項目を検疫"
+
+#. translators: %d: number of exported options.
+#: build/index.js:5 src/tabs/OptionsList.jsx:220
+msgid "%d option(s) exported."
+msgstr "%d 件のオプションをエクスポートしました。"
+
+#: build/index.js:5 src/tabs/OptionsList.jsx:298
+msgid "Export selected"
+msgstr "選択項目をエクスポート"
+
 #. translators: %d: number of options about to be deleted.
-#: src/tabs/OptionsList.jsx:164
+#: build/index.js:6 src/tabs/OptionsList.jsx:164
 msgid ""
 "Permanently delete %d option(s)?\n"
 "\n"
@@ -272,169 +303,127 @@ msgstr ""
 "にダウンロードしてから、改めて削除してください。"
 
 #. translators: %d: number of deleted options.
-#: src/tabs/OptionsList.jsx:180
+#: build/index.js:8 src/tabs/OptionsList.jsx:180
 msgid "%d option(s) deleted."
 msgstr "%d 件のオプションを削除しました。"
 
-#. translators: %d: number of quarantined options.
-#: src/tabs/OptionsList.jsx:195
-msgid "%d option(s) quarantined."
-msgstr "%d 件のオプションを検疫しました。"
-
-#. translators: %d: number of exported options.
-#: src/tabs/OptionsList.jsx:220
-msgid "%d option(s) exported."
-msgstr "%d 件のオプションをエクスポートしました。"
-
-#: src/tabs/OptionsList.jsx:260
-msgid "Accessor plugin/theme is currently inactive."
-msgstr "アクセス元のプラグイン／テーマは現在無効化されています。"
-
-#: src/tabs/OptionsList.jsx:265
-msgid "inactive"
-msgstr "無効"
-
-#: src/tabs/OptionsList.jsx:271
-msgid "WordPress core option — cannot be selected or deleted."
-msgstr "WordPress コアオプション — 選択・削除できません。"
-
-#: src/tabs/OptionsList.jsx:276
-msgid "protected"
-msgstr "保護"
-
-#: src/tabs/OptionsList.jsx:291
-msgid "Quarantine selected"
-msgstr "選択項目を検疫"
-
-#: src/tabs/OptionsList.jsx:298
-msgid "Export selected"
-msgstr "選択項目をエクスポート"
-
-#: src/tabs/OptionsList.jsx:306
+#: build/index.js:8 src/tabs/OptionsList.jsx:306
 msgid "Delete selected"
 msgstr "選択項目を削除"
 
 #. translators: 1: selected rows, 2: matching rows.
-#: src/tabs/OptionsList.jsx:311
+#: build/index.js:9 src/tabs/OptionsList.jsx:311
 msgid "%1$d selected · %2$d matches"
 msgstr "%1$d 件選択中 · %2$d 件該当"
 
-#: src/tabs/OptionsList.jsx:323
+#: build/index.js:9 src/tabs/OptionsList.jsx:323
 msgid "Search"
 msgstr "検索"
 
-#: src/tabs/OptionsList.jsx:334
+#: build/index.js:9 src/tabs/OptionsList.jsx:334
 msgid "All"
 msgstr "すべて"
 
-#: src/tabs/OptionsList.jsx:347
+#: build/index.js:9 src/tabs/OptionsList.jsx:347
 msgid "Inactive accessors only"
 msgstr "無効のアクセス元"
 
-#: src/tabs/OptionsList.jsx:355
+#: build/index.js:9 src/tabs/OptionsList.jsx:355
 msgid "Autoload only"
 msgstr "自動読み込みのみ"
 
-#: src/tabs/OptionsList.jsx:363
+#: build/index.js:9 src/tabs/OptionsList.jsx:363
 msgid "Show WordPress-Core"
 msgstr "WordPress コアのオプションを表示"
 
-#: src/tabs/OptionsList.jsx:393
+#: build/index.js:9 src/tabs/OptionsList.jsx:393
 msgid "Select all options on this page"
 msgstr "このページのすべてのオプションを選択"
 
 #. translators: %s: column heading label (e.g. "Size").
-#: src/tabs/OptionsList.jsx:408
+#: build/index.js:10 src/tabs/OptionsList.jsx:408
 msgid "Sort by %s"
 msgstr "%s で並び替え"
 
-#: src/tabs/OptionsList.jsx:441
+#: build/index.js:10 src/tabs/OptionsList.jsx:441
 msgid "WordPress core option — protected"
 msgstr "WordPress コアオプション — 保護されています"
 
-#: src/tabs/OptionsList.jsx:459
+#: build/index.js:10 src/tabs/OptionsList.jsx:459
 msgid "autoload"
 msgstr "自動読み込み"
 
-#: src/tabs/OptionsList.jsx:487
+#: build/index.js:10 src/tabs/OptionsList.jsx:487
 msgid "Previous"
 msgstr "前へ"
 
-#: src/tabs/OptionsList.jsx:491
+#: build/index.js:10 src/tabs/OptionsList.jsx:491
 msgid "Page"
 msgstr "ページ"
 
-#: src/tabs/OptionsList.jsx:506
+#: build/index.js:10 src/tabs/OptionsList.jsx:506
 msgid "Jump to page"
 msgstr "ページ番号でジャンプ"
 
 #. translators: %d: total number of pages.
-#: src/tabs/OptionsList.jsx:512
+#: build/index.js:11 src/tabs/OptionsList.jsx:512
 msgid "of %d"
 msgstr "／ %d ページ"
 
-#: src/tabs/OptionsList.jsx:522
+#: build/index.js:11 src/tabs/OptionsList.jsx:522
 msgid "Next"
 msgstr "次へ"
 
-#: src/tabs/OptionsList.jsx:526
+#: build/index.js:11 src/tabs/OptionsList.jsx:526
 msgid "Per page"
 msgstr "1 ページあたりの件数"
 
 #. translators: %d: rows per page.
-#: src/tabs/OptionsList.jsx:532
+#: build/index.js:12 src/tabs/OptionsList.jsx:532
 msgid "%d / page"
 msgstr "%d 件／ページ"
 
-#: src/tabs/Quarantine.jsx:31
-msgid "Option restored."
-msgstr "オプションを復元しました。"
+#: build/index.js:12 src/App.js:16
+msgid "Quarantine"
+msgstr ""
 
-#: src/tabs/Quarantine.jsx:39
-msgid "Permanently delete this quarantined option?"
-msgstr "検疫中のこのオプションを本削除しますか？"
-
-#: src/tabs/Quarantine.jsx:49
-msgid "Option permanently deleted."
-msgstr "オプションを本削除しました。"
-
-#: src/tabs/Quarantine.jsx:67
+#: build/index.js:12 src/tabs/Quarantine.jsx:67
 msgid "Status"
 msgstr "状態"
 
-#: src/tabs/Quarantine.jsx:70
+#: build/index.js:12 src/tabs/Quarantine.jsx:70
 msgid "Active"
 msgstr "検疫中"
 
-#: src/tabs/Quarantine.jsx:72
+#: build/index.js:12 src/tabs/Quarantine.jsx:72
 msgid "Restored"
 msgstr "復元済み"
 
-#: src/tabs/Quarantine.jsx:75
+#: build/index.js:12 src/tabs/Quarantine.jsx:75
 msgid "Deleted"
 msgstr "削除済み"
 
-#: src/tabs/Quarantine.jsx:87
+#: build/index.js:12 src/tabs/Quarantine.jsx:87
 msgid "Original name"
 msgstr "元の名前"
 
-#: src/tabs/Quarantine.jsx:88
+#: build/index.js:12 src/tabs/Quarantine.jsx:88
 msgid "Quarantined at"
 msgstr "検疫日時"
 
-#: src/tabs/Quarantine.jsx:89
+#: build/index.js:12 src/tabs/Quarantine.jsx:89
 msgid "Expires at"
 msgstr "期限"
 
-#: src/tabs/Quarantine.jsx:91
+#: build/index.js:12 src/tabs/Quarantine.jsx:91
 msgid "Access count"
 msgstr "アクセス回数"
 
-#: src/tabs/Quarantine.jsx:93
+#: build/index.js:12 src/tabs/Quarantine.jsx:93
 msgid "Actions"
 msgstr "操作"
 
-#: src/tabs/Quarantine.jsx:104
+#: build/index.js:12 src/tabs/Quarantine.jsx:104
 msgid ""
 "This option was accessed after quarantine. Restore it to keep the site "
 "working; auto-expiry is paused until you restore."
@@ -442,18 +431,54 @@ msgstr ""
 "検疫後にアクセスがありました。サイト動作維持のため復元してください。復元され"
 "るまで自動期限切れは一時停止されます。"
 
-#: src/tabs/Quarantine.jsx:109
+#: build/index.js:12 src/tabs/Quarantine.jsx:109
 msgid "in use — restore"
 msgstr "使用中・要復元"
 
-#: src/tabs/Quarantine.jsx:145
+#: build/index.js:12 src/tabs/Quarantine.jsx:31
+msgid "Option restored."
+msgstr "オプションを復元しました。"
+
+#: build/index.js:12 src/tabs/Quarantine.jsx:145
 msgid "Restore"
 msgstr "復元"
 
-#: src/tabs/Quarantine.jsx:154
+#: build/index.js:12 src/tabs/Quarantine.jsx:39
+msgid "Permanently delete this quarantined option?"
+msgstr "検疫中のこのオプションを本削除しますか？"
+
+#: build/index.js:12 src/tabs/Quarantine.jsx:49
+msgid "Option permanently deleted."
+msgstr "オプションを本削除しました。"
+
+#: build/index.js:12 src/tabs/Quarantine.jsx:154
 msgid "Delete"
 msgstr "削除"
 
-#: src/tabs/Quarantine.jsx:168
+#: build/index.js:12 src/tabs/Quarantine.jsx:168
 msgid "No entries."
 msgstr "該当する項目はありません。"
+
+#: build/index.js:12 src/App.js:17 src/tabs/Import.jsx:64
+msgid "Import"
+msgstr "インポート"
+
+#: build/index.js:12 src/tabs/Import.jsx:55
+msgid "Overwrite existing rows"
+msgstr "既存行を上書きする"
+
+#: build/index.js:12 src/tabs/Import.jsx:61
+msgid "Dry run"
+msgstr "ドライラン"
+
+#: build/index.js:12 src/tabs/Import.jsx:71
+msgid "Preview — add: %1$d, overwrite: %2$d"
+msgstr "プレビュー — 追加: %1$d 件、上書き: %2$d 件"
+
+#: build/index.js:12 src/tabs/Import.jsx:80
+msgid "Import complete — added: %1$d, overwritten: %2$d, skipped: %3$d"
+msgstr "インポート完了 — 追加: %1$d 件、上書き: %2$d 件、スキップ: %3$d 件"
+
+#: build/index.js:12 src/index.js:22
+msgid "Orpharion mount node not found."
+msgstr ""

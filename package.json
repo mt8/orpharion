@@ -1,6 +1,6 @@
 {
   "name": "orpharion",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans.",
   "private": true,
   "license": "GPL-2.0-or-later",
