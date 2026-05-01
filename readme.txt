@@ -4,7 +4,7 @@ Tags: options, database, cleanup, performance, autoload
 Requires at least: 6.8
 Tested up to: 6.9
 Requires PHP: 8.3
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,11 @@ The published plugin ships with the compiled admin bundle in `build/` (`build/in
 PHP code is shipped uncompiled and is the same in the published ZIP and in the repository.
 
 == Changelog ==
+
+= 1.1.2 =
+* Admin menu icon: the opacity override is now attached to a registered style handle via `wp_add_inline_style()` on `admin_enqueue_scripts` instead of being printed as an inline `<style>` tag from `admin_head`. Visual behavior is unchanged.
+* Read tracker: the `WP_PLUGIN_DIR` and `WPMU_PLUGIN_DIR` references used to classify backtrace frames are now routed through `wp_normalize_path()`, with a comment recording why those constants are referenced (identifying *other* plugins' install roots — Orpharion's own location is resolved from `__FILE__`).
+* Documentation: `readme.txt` now includes a "Source code" section pointing to the public GitHub repository (`https://github.com/mt8/orpharion`) and the `npm run build` flow used to regenerate the bundled admin assets.
 
 = 1.1.1 =
 * WP-CLI: `wp orpharion export --output=<file>` now requires a bare `*.json` filename and always writes into `wp-content/uploads/orpharion/`. Absolute or relative paths and non-`.json` extensions are rejected so option_value content (which can include API keys, SMTP credentials, and other secrets) cannot be written to a web-accessible location. The export directory is created on demand with `index.html` and `.htaccess` so it is not browseable.
