@@ -248,8 +248,15 @@ final class Tracker {
 	 * @return array{type:string,slug:string}
 	 */
 	public static function classify_trace( array $trace ): array {
-		$plugins = self::normalize( defined( 'WP_PLUGIN_DIR' ) ? WP_PLUGIN_DIR : '' );
-		$mu      = self::normalize( defined( 'WPMU_PLUGIN_DIR' ) ? WPMU_PLUGIN_DIR : '' );
+		// WP_PLUGIN_DIR / WPMU_PLUGIN_DIR are referenced here to identify
+		// OTHER plugins' install roots so a debug_backtrace() frame can be
+		// attributed to the code that triggered the get_option() call. This
+		// mirrors how WordPress core's plugin_basename() routes file paths
+		// (see wp-includes/plugin.php). Orpharion's own location is resolved
+		// from __FILE__ via ORPHARION_DIR in orpharion.php, not from these
+		// constants.
+		$plugins = self::normalize( wp_normalize_path( WP_PLUGIN_DIR ) );
+		$mu      = self::normalize( wp_normalize_path( WPMU_PLUGIN_DIR ) );
 		$themes  = self::normalize( function_exists( 'get_theme_root' ) ? get_theme_root() : '' );
 		$self    = self::normalize( defined( 'ORPHARION_DIR' ) ? ORPHARION_DIR : '' );
 
