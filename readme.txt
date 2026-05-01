@@ -56,6 +56,21 @@ Uninstalling restores any active quarantines to their original names, drops the 
 
 The orpharion is a Renaissance plucked-string instrument invented in England in 1581 by John Rose. The name is a 16th-century coinage from Orpheus and Arion, two legendary musicians of Greek mythology. Music by John Dowland, William Byrd, and others was published for it. The plugin borrows the name as a nod to the idea of carefully tuning what sits in your `wp_options` table.
 
+== Source code ==
+
+The published plugin ships with the compiled admin bundle in `build/` (`build/index.js`, `build/index.css`, `build/index.asset.php`). The non-compiled source for that bundle lives in `src/` in the public GitHub repository:
+
+* Repository: https://github.com/mt8/orpharion
+* Build tool: [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) (uses webpack + Babel under the hood).
+* Reproduce the bundle:
+
+  1. Clone the repository.
+  2. Install dependencies: `npm install` (Node.js version compatible with `@wordpress/scripts` is required).
+  3. Build: `npm run build` — produces the same `build/` files that are shipped with the plugin.
+  4. Watch mode for development: `npm run start`.
+
+PHP code is shipped uncompiled and is the same in the published ZIP and in the repository.
+
 == Changelog ==
 
 = 1.1.1 =
