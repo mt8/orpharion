@@ -32,12 +32,20 @@ final class Admin_Page {
 	public const HOOK_SUFFIX = 'toplevel_page_' . self::MENU_SLUG;
 
 	/**
+	 * Style handle for the menu-icon opacity override.
+	 *
+	 * Loaded on every admin page (not only the Orpharion screen) because
+	 * the top-level menu is rendered everywhere in wp-admin.
+	 */
+	private const MENU_ICON_STYLE_HANDLE = 'orpharion-menu';
+
+	/**
 	 * Registers admin hooks.
 	 */
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'add_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_menu_icon_style' ) );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
-		add_action( 'admin_head', array( self::class, 'menu_icon_css' ) );
 	}
 
 	/**
@@ -56,16 +64,24 @@ final class Admin_Page {
 	}
 
 	/**
-	 * Keeps the branded menu icon fully saturated.
+	 * Enqueues the menu-icon opacity override on every admin page.
 	 *
-	 * WordPress dims menu icon images with opacity:0.6 by default; override it
-	 * so the branded colors read at their intended intensity.
+	 * WordPress dims menu icon images with opacity:0.6 by default; this
+	 * override keeps the branded colors at their intended intensity. The
+	 * rule is attached to a no-source registered style via
+	 * wp_add_inline_style() so it goes through the standard stylesheet
+	 * pipeline rather than a raw <style> tag in admin_head.
 	 */
-	public static function menu_icon_css(): void {
-		echo '<style>'
-			. '#adminmenu .toplevel_page_' . esc_attr( self::MENU_SLUG ) . ' .wp-menu-image img'
-			. '{opacity:1;}'
-			. '</style>';
+	public static function enqueue_menu_icon_style(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		wp_register_style( self::MENU_ICON_STYLE_HANDLE, false, array(), ORPHARION_VERSION );
+		wp_enqueue_style( self::MENU_ICON_STYLE_HANDLE );
+		wp_add_inline_style(
+			self::MENU_ICON_STYLE_HANDLE,
+			'#adminmenu .toplevel_page_' . self::MENU_SLUG . ' .wp-menu-image img{opacity:1;}'
+		);
 	}
 
 	/**
