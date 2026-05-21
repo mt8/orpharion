@@ -2,7 +2,7 @@
 Contributors: mt8biz
 Tags: options, database, cleanup, performance, autoload
 Requires at least: 6.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.3
 Stable tag: 1.1.3
 License: GPLv2 or later
@@ -77,6 +77,7 @@ The orpharion is a Renaissance plucked-string instrument invented in England in 
 
 = 1.1.3 =
 * readme: the **Source code** section (public GitHub repository and `npm run build` reproduction steps for the compiled admin bundle) is now placed directly after **Description** so the build-source pointer is immediately visible.
+* readme: `Tested up to` bumped to 7.0 to reflect the current WordPress release.
 * Read tracker: plugin and mu-plugin frame classification in `Tracker::classify_trace()` now goes through `plugin_basename()` instead of comparing against `WP_PLUGIN_DIR` / `WPMU_PLUGIN_DIR` directly. This reuses WP core's plugins-root resolution (including symlink awareness via `$wp_plugin_paths`) without duplicating the constant references in plugin code. Behavior is unchanged for standard setups; the legacy `mu:` slug prefix on mu-plugin readers is dropped (it was not consulted anywhere downstream).
 
 = 1.1.2 =
