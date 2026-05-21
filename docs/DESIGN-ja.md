@@ -127,10 +127,12 @@ per-name フィルタを `plugins_loaded` 優先度 10 で登録するのは、Y
 
 ```
 判定ロジック:
-  ファイルパスが WP_PLUGIN_DIR 以下  → type=plugin, slug=ディレクトリ名
-  ファイルパスが get_theme_root() 以下 → type=theme,  slug=ディレクトリ名
-  上記いずれでもない                  → type=core
+  ファイルパスが plugin_basename() で短縮される → type=plugin, slug=ディレクトリ名
+  ファイルパスが get_theme_root() 以下         → type=theme,  slug=ディレクトリ名
+  上記いずれでもない                            → type=unknown
 ```
+
+`plugin_basename()` は WordPress 標準のヘルパーで、プラグインおよび MU プラグインのルートに対してファイルパスを解決する（`$wp_plugin_paths` グローバルを介してシンボリックリンクにも対応）。これを利用することで `WP_PLUGIN_DIR` / `WPMU_PLUGIN_DIR` を直接参照することなく、WP コア自体と同じ解決ロジックを再利用できる。Orpharion 自身のスタックフレームは `ORPHARION_DIR` で除外し、*次の*フレーム（実際の呼び出し元）を分類対象とする。
 
 #### パフォーマンス制御
 

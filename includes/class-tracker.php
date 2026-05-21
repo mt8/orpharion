@@ -244,21 +244,21 @@ final class Tracker {
 	 *
 	 * Pure function exposed for unit tests.
 	 *
+	 * Plugin / mu-plugin detection is delegated to the WordPress-provided
+	 * {@see plugin_basename()} helper rather than hard-coded references to
+	 * `WP_PLUGIN_DIR` / `WPMU_PLUGIN_DIR`. `plugin_basename()` already
+	 * encapsulates both plugin roots and additionally consults the
+	 * `$wp_plugin_paths` global (populated by `wp_register_plugin_realpath()`)
+	 * so symlinked plugin directories are resolved correctly. Theme frames
+	 * are detected via `get_theme_root()`, and Orpharion's own frames via
+	 * `ORPHARION_DIR` (defined from `__FILE__` in `orpharion.php`).
+	 *
 	 * @param array<int,array{file?:string}> $trace debug_backtrace() output.
 	 * @return array{type:string,slug:string}
 	 */
 	public static function classify_trace( array $trace ): array {
-		// WP_PLUGIN_DIR / WPMU_PLUGIN_DIR are referenced here to identify
-		// OTHER plugins' install roots so a debug_backtrace() frame can be
-		// attributed to the code that triggered the get_option() call. This
-		// mirrors how WordPress core's plugin_basename() routes file paths
-		// (see wp-includes/plugin.php). Orpharion's own location is resolved
-		// from __FILE__ via ORPHARION_DIR in orpharion.php, not from these
-		// constants.
-		$plugins = self::normalize( wp_normalize_path( WP_PLUGIN_DIR ) );
-		$mu      = self::normalize( wp_normalize_path( WPMU_PLUGIN_DIR ) );
-		$themes  = self::normalize( function_exists( 'get_theme_root' ) ? get_theme_root() : '' );
-		$self    = self::normalize( defined( 'ORPHARION_DIR' ) ? ORPHARION_DIR : '' );
+		$themes = self::normalize( function_exists( 'get_theme_root' ) ? get_theme_root() : '' );
+		$self   = self::normalize( defined( 'ORPHARION_DIR' ) ? ORPHARION_DIR : '' );
 
 		foreach ( $trace as $frame ) {
 			if ( empty( $frame['file'] ) ) {
@@ -266,26 +266,31 @@ final class Tracker {
 			}
 			$file = self::normalize( (string) $frame['file'] );
 
+			// Skip frames inside Orpharion itself; the next frame is the real caller.
 			if ( '' !== $self && self::starts_with( $file, $self ) ) {
 				continue;
 			}
-			if ( '' !== $plugins && self::starts_with( $file, $plugins ) ) {
-				return array(
-					'type' => 'plugin',
-					'slug' => self::extract_slug( $file, $plugins ),
-				);
-			}
-			if ( '' !== $mu && self::starts_with( $file, $mu ) ) {
-				return array(
-					'type' => 'plugin',
-					'slug' => 'mu:' . self::extract_slug( $file, $mu ),
-				);
-			}
+
+			// Theme attribution.
 			if ( '' !== $themes && self::starts_with( $file, $themes ) ) {
 				return array(
 					'type' => 'theme',
 					'slug' => self::extract_slug( $file, $themes ),
 				);
+			}
+
+			// Plugin / mu-plugin attribution. plugin_basename() returns the
+			// input unchanged (modulo leading/trailing slashes) when the file
+			// is not under either plugins root, so a successful match is
+			// detected by a strictly shorter returned length.
+			if ( function_exists( 'plugin_basename' ) ) {
+				$basename = plugin_basename( $file );
+				if ( '' !== $basename && strlen( $basename ) < strlen( ltrim( $file, '/' ) ) ) {
+					return array(
+						'type' => 'plugin',
+						'slug' => self::extract_slug( $basename, '' ),
+					);
+				}
 			}
 		}
 
