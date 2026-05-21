@@ -2,9 +2,9 @@
 Contributors: mt8biz
 Tags: options, database, cleanup, performance, autoload
 Requires at least: 6.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.3
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,23 @@ Orpharion observes which options are actually read at runtime, attributes each r
 3. **Delete** — the row is removed from both `wp_options` and the tracking table. Use the **Export selected** bulk action first if you want a restore copy; Orpharion never writes option_value content to the server filesystem on your behalf (option_value can contain API keys, SMTP credentials, and other secrets that should not leak into backups of `wp-content/`).
 
 Core WordPress options are locked out of destructive operations, on both the deletion and the import side.
+
+The full PHP source ships uncompiled with the plugin; the non-compiled source of the compiled admin bundle (`build/index.js`, `build/index.css`) is published at https://github.com/mt8/orpharion — see the **Source code** section below for the exact build steps.
+
+== Source code ==
+
+The published plugin ships with the compiled admin bundle in `build/` (`build/index.js`, `build/index.css`, `build/index.asset.php`). The non-compiled source for that bundle lives in `src/` in the public GitHub repository:
+
+* Repository: https://github.com/mt8/orpharion
+* Build tool: [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) (uses webpack + Babel under the hood).
+* Reproduce the bundle:
+
+  1. Clone the repository.
+  2. Install dependencies: `npm install` (Node.js version compatible with `@wordpress/scripts` is required).
+  3. Build: `npm run build` — produces the same `build/` files that are shipped with the plugin.
+  4. Watch mode for development: `npm run start`.
+
+PHP code is shipped uncompiled and is the same in the published ZIP and in the repository.
 
 == Features ==
 
@@ -56,22 +73,12 @@ Uninstalling restores any active quarantines to their original names, drops the 
 
 The orpharion is a Renaissance plucked-string instrument invented in England in 1581 by John Rose. The name is a 16th-century coinage from Orpheus and Arion, two legendary musicians of Greek mythology. Music by John Dowland, William Byrd, and others was published for it. The plugin borrows the name as a nod to the idea of carefully tuning what sits in your `wp_options` table.
 
-== Source code ==
-
-The published plugin ships with the compiled admin bundle in `build/` (`build/index.js`, `build/index.css`, `build/index.asset.php`). The non-compiled source for that bundle lives in `src/` in the public GitHub repository:
-
-* Repository: https://github.com/mt8/orpharion
-* Build tool: [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) (uses webpack + Babel under the hood).
-* Reproduce the bundle:
-
-  1. Clone the repository.
-  2. Install dependencies: `npm install` (Node.js version compatible with `@wordpress/scripts` is required).
-  3. Build: `npm run build` — produces the same `build/` files that are shipped with the plugin.
-  4. Watch mode for development: `npm run start`.
-
-PHP code is shipped uncompiled and is the same in the published ZIP and in the repository.
-
 == Changelog ==
+
+= 1.1.3 =
+* readme: the **Source code** section (public GitHub repository and `npm run build` reproduction steps for the compiled admin bundle) is now placed directly after **Description** so the build-source pointer is immediately visible.
+* readme: `Tested up to` bumped to 7.0 to reflect the current WordPress release.
+* Read tracker: plugin and mu-plugin frame classification in `Tracker::classify_trace()` now goes through `plugin_basename()` instead of comparing against `WP_PLUGIN_DIR` / `WPMU_PLUGIN_DIR` directly. This reuses WP core's plugins-root resolution (including symlink awareness via `$wp_plugin_paths`) without duplicating the constant references in plugin code. Behavior is unchanged for standard setups; the legacy `mu:` slug prefix on mu-plugin readers is dropped (it was not consulted anywhere downstream).
 
 = 1.1.2 =
 * Admin menu icon: the opacity override is now attached to a registered style handle via `wp_add_inline_style()` on `admin_enqueue_scripts` instead of being printed as an inline `<style>` tag from `admin_head`. Visual behavior is unchanged.

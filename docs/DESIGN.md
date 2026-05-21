@@ -127,10 +127,12 @@ The per-name filter is registered at `plugins_loaded` priority 10 (not `admin_in
 
 ```
 Classification rules:
-  file path is under WP_PLUGIN_DIR     → type=plugin, slug=directory name
-  file path is under get_theme_root()  → type=theme,  slug=directory name
-  neither of the above                 → type=unknown
+  file path resolves via plugin_basename()   → type=plugin, slug=directory name
+  file path is under get_theme_root()        → type=theme,  slug=directory name
+  neither of the above                       → type=unknown
 ```
+
+`plugin_basename()` is the WordPress-provided helper that resolves a file path against the plugins and mu-plugins roots (and is symlink-aware via the `$wp_plugin_paths` global). Routing through it avoids hard-coded references to `WP_PLUGIN_DIR` / `WPMU_PLUGIN_DIR` and inherits WP core's resolution logic verbatim. Frames inside Orpharion itself are skipped via `ORPHARION_DIR` so the *next* frame on the stack — the real caller — is the one classified.
 
 #### Performance controls
 
