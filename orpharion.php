@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:       Orpharion
- * Plugin URI:        https://github.com/mt8/orpharion
  * Description:       Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans.
  * Version:           1.1.3
  * Requires at least: 6.8

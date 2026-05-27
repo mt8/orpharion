@@ -39,7 +39,13 @@ jobs:
 
   plugin-check:
     name: Plugin Check
-    runs-on: ubuntu-latest
+    # Pinned to ubuntu-22.04: the ubuntu-24.04 runner image released on
+    # 2026-05-25 (version 20260525.161.x) regressed wp-env start inside
+    # wordpress/plugin-check-action — `wp-env start` exits 0 without
+    # actually bringing up Docker containers, and the next step fails
+    # with "Environment not initialized". Re-evaluate once upstream
+    # ships a fix.
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
