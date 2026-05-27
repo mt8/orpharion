@@ -1,0 +1,57 @@
+name: Deploy to WordPress.org
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy main to wp.org SVN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install composer (production)
+        run: composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
+
+      - name: Install npm and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Resolve version from readme.txt
+        id: version
+        run: |
+          version="$(grep -m1 -E '^Stable tag:[[:space:]]*' readme.txt | awk '{print $3}')"
+          if [ -z "${version}" ]; then
+            echo "Could not resolve Stable tag from readme.txt" >&2
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: ${version}"
+
+      - name: Deploy to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: orpharion
+          VERSION: ${{ steps.version.outputs.version }}

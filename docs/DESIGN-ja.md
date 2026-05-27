@@ -660,7 +660,26 @@ orpharion/
 
 ---
 
-## 12. 今後の拡張案
+## 12. リリースフロー
+
+公開チャネルは 2 系統に分かれる。
+
+1. **GitHub Releases** — タグ駆動（`X.Y.Z`）。semver タグの push で `.github/workflows/release.yml` が走り、本番ビルドを作成して `orpharion-X.Y.Z.zip` と `orpharion.zip` を GitHub Release に添付する。
+2. **WordPress.org SVN** — 手動ディスパッチ。`.github/workflows/wporg-deploy.yml` は `workflow_dispatch` 専用。`main` をチェックアウトし、本番用の composer / npm 依存をインストール、`npm run build` を実行し、`readme.txt` の `Stable tag` を読んでデプロイバージョンを決定する。デプロイは [`10up/action-wordpress-plugin-deploy@stable`](https://github.com/10up/action-wordpress-plugin-deploy) に `SLUG=orpharion` で委譲する。SVN 認証情報はリポジトリシークレット `SVN_USERNAME` / `SVN_PASSWORD` から取得する。
+
+wp.org trunk に配布する内容は `.distignore` で制御する。`.wordpress-org/`（バナー / アイコン / スクリーンショット PNG）は `.distignore` に記載され、プラグイン本体 zip には**含めない**。10up action がこのディレクトリを別途検出して SVN `/assets/` に同期する。
+
+wp.org デプロイ実行前の確認項目：
+
+1. リリースコミットが `main` に入っていること。
+2. `readme.txt` の `Stable tag` がデプロイ予定の SVN タグと一致していること。
+3. `orpharion.php` のプラグインヘッダ `Version` が `Stable tag` と一致していること。
+4. `main` の CI が成功していること。
+5. ビジュアルアセットを更新する場合、`.wordpress-org/` 配下にバナー／アイコンが配置されていること。
+
+---
+
+## 13. 今後の拡張案
 
 - **差分レポートメール**: 週次で「新規に検出された不要オプション」をメール通知
 - **マルチサイト対応**: `wp_sitemeta` テーブルの同等スキャン

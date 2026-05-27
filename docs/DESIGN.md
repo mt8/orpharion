@@ -656,7 +656,26 @@ orpharion/
 
 ---
 
-## 12. Future extensions
+## 12. Release flow
+
+Two separate publishing channels:
+
+1. **GitHub Releases** — tag-driven (`X.Y.Z`). `.github/workflows/release.yml` runs on pushed semver tags, builds the production bundle, and attaches both `orpharion-X.Y.Z.zip` and `orpharion.zip` to the GitHub release.
+2. **WordPress.org SVN** — manually dispatched. `.github/workflows/wporg-deploy.yml` runs on `workflow_dispatch` only. It checks out `main`, installs production composer/npm deps, runs `npm run build`, reads the deploy version from `readme.txt` (`Stable tag`), and hands off to [`10up/action-wordpress-plugin-deploy@stable`](https://github.com/10up/action-wordpress-plugin-deploy) with `SLUG=orpharion`. SVN credentials come from the `SVN_USERNAME` / `SVN_PASSWORD` repository secrets.
+
+`.distignore` controls what gets shipped to wp.org trunk. The `.wordpress-org/` directory (banner/icon/screenshot PNGs) is listed there so it is **not** copied into the plugin zip; the 10up action picks it up separately and syncs it to SVN `/assets/`.
+
+Operator checklist before dispatching the wp.org deploy:
+
+1. The release commit is on `main`.
+2. `Stable tag` in `readme.txt` matches the intended SVN tag.
+3. `orpharion.php` plugin header `Version` matches `Stable tag`.
+4. CI is green on `main`.
+5. wp.org banners/icons are present under `.wordpress-org/` if any visual assets are being changed.
+
+---
+
+## 13. Future extensions
 
 - **Weekly diff email**: email digest of "newly detected unused options" once a week.
 - **Multisite**: the equivalent scan for the `wp_sitemeta` table.

@@ -8,6 +8,7 @@
 .vscode
 .wp-env.json
 .wp-env.override.json
+.wordpress-org
 .distignore
 .editorconfig
 .DS_Store
