@@ -4,7 +4,7 @@ Tags: options, database, cleanup, performance, autoload
 Requires at least: 6.8
 Tested up to: 7.0
 Requires PHP: 8.3
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,6 +74,9 @@ Uninstalling restores any active quarantines to their original names, drops the 
 The orpharion is a Renaissance plucked-string instrument invented in England in 1581 by John Rose. The name is a 16th-century coinage from Orpheus and Arion, two legendary musicians of Greek mythology. Music by John Dowland, William Byrd, and others was published for it. The plugin borrows the name as a nod to the idea of carefully tuning what sits in your `wp_options` table.
 
 == Changelog ==
+
+= 1.1.4 =
+* Assets: add the square plugin icon (128×128 and 256×256) used by the WordPress.org plugin directory listing and the installed plugins screen. No functional changes.
 
 = 1.1.3 =
 * readme: the **Source code** section (public GitHub repository and `npm run build` reproduction steps for the compiled admin bundle) is now placed directly after **Description** so the build-source pointer is immediately visible.

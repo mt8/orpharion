@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Orpharion
  * Description:       Track which plugin or theme accesses each wp_options row, then quarantine or clean orphans.
- * Version:           1.1.3
+ * Version:           1.1.4
  * Requires at least: 6.8
  * Requires PHP:      8.3
  * Author:            mt8biz
@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ORPHARION_VERSION', '1.1.3' );
+define( 'ORPHARION_VERSION', '1.1.4' );
 define( 'ORPHARION_FILE', __FILE__ );
 define( 'ORPHARION_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ORPHARION_URL', plugin_dir_url( __FILE__ ) );
