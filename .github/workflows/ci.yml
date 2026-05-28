@@ -39,13 +39,15 @@ jobs:
 
   plugin-check:
     name: Plugin Check
-    # Pinned to ubuntu-22.04: the ubuntu-24.04 runner image released on
-    # 2026-05-25 (version 20260525.161.x) regressed wp-env start inside
-    # wordpress/plugin-check-action — `wp-env start` exits 0 without
-    # actually bringing up Docker containers, and the next step fails
-    # with "Environment not initialized". Re-evaluate once upstream
-    # ships a fix.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    # We do not use `wordpress/plugin-check-action@v1` here. The action runs
+    # `npm -g i @wordpress/env` without a version pin, so it always pulls the
+    # latest @wordpress/env. The 11.7.0 release (2026-05-27) silently fails
+    # `wp-env start` on GitHub-hosted runners (Docker containers never come
+    # up; the next step fails with "Environment not initialized"). We inline
+    # the action's steps and pin @wordpress/env to a known-good version.
+    env:
+      WP_ENV_VERSION: '11.6.0'
     steps:
       - uses: actions/checkout@v4
 
@@ -84,10 +86,45 @@ jobs:
             --exclude='package.json' \
             --exclude='composer.json'
 
-      - uses: wordpress/plugin-check-action@v1
+      - name: Write .wp-env.json for Plugin Check
+        run: |
+          cat > .wp-env.json <<JSON
+          {
+            "core": null,
+            "port": 8880,
+            "testsPort": 8881,
+            "plugins": [
+              "https://downloads.wordpress.org/plugin/plugin-check.zip"
+            ],
+            "mappings": {
+              "wp-content/plugins/orpharion": "/tmp/plugin-check/orpharion"
+            }
+          }
+          JSON
+
+      - name: Install pinned @wordpress/env
+        run: npm -g --no-fund i "@wordpress/env@${WP_ENV_VERSION}"
+
+      - name: Start wp-env
+        uses: nick-fields/retry@v4
         with:
-          build-dir: '/tmp/plugin-check/orpharion'
-          ignore-warnings: true
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: wp-env start --update
+
+      - name: Run Plugin Check
+        run: |
+          wp-env run cli wp cli info
+          wp-env run cli wp plugin activate orpharion
+          wp-env run cli wp plugin check orpharion \
+            --format=json \
+            --ignore-warnings \
+            --require=./wp-content/plugins/plugin-check/cli.php
+
+      - name: Stop wp-env
+        if: always()
+        run: wp-env stop || true
 
   phpunit:
     name: PHPUnit (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})
